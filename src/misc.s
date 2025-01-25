@@ -106,6 +106,12 @@ meta = ptr3
 	
 	dey
 	lda (sp),y
+	beq :+
+		lda #64
+		jmp :++
+	:
+		lda #0
+	:
 	sta flip
 	
 	ldx px_sprite_cursor
@@ -114,8 +120,12 @@ meta = ptr3
 	lda (meta), y
 	cmp #$80
 	beq @return
-	; add #8 ; flipx
-	; eor #$FF
+	bit flip
+	; flipx flag is $40 which bit conveniently loads into v flag
+	bvc :+
+		add #8
+		eor #$FF
+	:
 	add sprx
 	sta OAM_X, x
 	iny
@@ -138,8 +148,7 @@ meta = ptr3
 	iny
 	
 	lda (meta), y
-	; ora pal
-	; eor #64 ; flipx
+	eor flip
 	sta OAM_ATTR, x
 	iny
 	
@@ -148,7 +157,7 @@ meta = ptr3
 	inx
 	inx
 	jmp @loop
-
+	
 @return:
 	stx px_sprite_cursor
 	jmp incsp4
