@@ -62,14 +62,16 @@ static const u8 META[] = {
 	-8, -8, 0xD0, 0,
 	 0, -8, 0xD1, 0,
 	-8,  0, 0xD2, 0,
-	 0,  0, 0xD3, 0,
+	 0,  0, 0xD2, 0,
 	128,
 };
 
 typedef struct {
 	long px, py;
+	long nx, ny;
 	short vx, vy;
-	
+	u8 pallete;
+	u8 tileData;
 	short x, y;
 } Player;
 
@@ -78,33 +80,84 @@ Player player = {32 << 8, 32 << 8};
 #define GRAVITY 64
 #define MAX_FALL_SPEED (4 << 8)
 
-static void update_player(){
-	// Apply gravity and clamp
-	player.vy += GRAVITY;
-	if(player.vy > MAX_FALL_SPEED) player.vy = MAX_FALL_SPEED;
+static bool collision_check(short x, short y){
+	// get tile we are colliding with 
+	player.tileData = MAP_SPLASH[32*(y>>3)+(x>>3)];
+
+	// if we are colliding, change the pallete
+	if (player.tileData != 0) {
+		return true;
+	}
 	
-	if(pad1.press & JOY_BTN_A_MASK){
+	return false;
+}
+
+bool onFloor = false;
+
+static void update_player(){
+	// ACTUAL INPUT
+	if(JOY_LEFT (pad1.value)) player.px -= 1 << 8;
+	if(JOY_RIGHT(pad1.value)) player.px += 1 << 8;
+	//if(JOY_DOWN (pad1.value)) player.py += 1 << 8;
+	//if(JOY_UP   (pad1.value)) player.py -= 1 << 8;
+	if(JOY_BTN_A(pad1.press)) sound_play(SOUND_JUMP);
+
+	if(pad1.press & JOY_BTN_A_MASK & player.vy == 0){
 		player.vy = -1000;
+	}
+	
+	// Apply gravity and clamp
+	if (!collision_check(player.x,player.y+1)) {
+		player.vy += GRAVITY;
+		if(player.vy > MAX_FALL_SPEED) player.vy = MAX_FALL_SPEED;
 	}
 	
 	// apply velocity to position
 	player.px += player.vx;
 	player.py += player.vy;
-	
-	if(player.py > (128 << 8)){
-		player.py = (128 << 8);
+
+	// don't fall through the bottom of the screen
+	if(player.py > (239l << 8)){ // l makes it a LONG int
+		player.py = (239l << 8);
 		if(player.vy > 0) player.vy = 0;
 	}
 	
-	// cache pixel position
+	// pallete collision debug
+	player.pallete = 2;
+
+	// update pixel positon x
 	player.x = player.px >> 8;
+	if (collision_check(player.x,player.y)) {
+		int deltaX = player.x % 8;
+		if (deltaX < 4) player.px -= (deltaX+1) << 8;
+		else player.px += (8-deltaX) << 8;
+		player.x = player.px >> 8;
+		player.vx = 0;
+		player.pallete = 3;
+	}
+
+	// update pixel position y
 	player.y = player.py >> 8;
+	if (collision_check(player.x,player.y)) {
+		int deltaY = player.y % 8;
+		if (deltaY < 4) player.py -= (deltaY+1) << 8;
+		else player.py += (8-deltaY) << 8;
+		player.y = player.py >> 8;
+		player.vy = 0;
+		player.pallete = 3;
+	}
+
+	// draw the tile hex on the screen for debugging;
+	px_debug_hex_addr = NT_ADDR(0,2,2);
+	px_debug_hex(player.vy);
 }
 
 static void splash_screen(void){
 	px_ppu_sync_disable();{
 		// Load the splash tilemap into nametable 0.
-		px_lz4_to_vram(NT_ADDR(0, 0, 0), MAP_SPLASH);
+		//px_lz4_to_vram(NT_ADDR(0, 0, 0), MAP_SPLASH);
+		px_addr(NT_ADDR(0, 0, 0));
+		px_blit(1024,MAP_SPLASH);
 	} px_ppu_sync_enable();
 	
 	// music_play(0);
@@ -113,18 +166,13 @@ static void splash_screen(void){
 	
 	while(true){
 		read_gamepads();
-		if(JOY_LEFT (pad1.value)) player.px -= 1 << 8;
-		if(JOY_RIGHT(pad1.value)) player.px += 1 << 8;
-		if(JOY_DOWN (pad1.value)) player.py += 1 << 8;
-		if(JOY_UP   (pad1.value)) player.py -= 1 << 8;
-		if(JOY_BTN_A(pad1.press)) sound_play(SOUND_JUMP);
 		
 		px_profile_start();
 		update_player();
 		px_profile_end();
 		
 		// Draw a sprite.
-		meta_spr(player.x, player.y, 2, META);
+		meta_spr(player.x, player.y, player.pallete, META);
 		
 		// PX.scroll_y = 480 + (sin >> 9);
 		// sin += cos >> 6;
