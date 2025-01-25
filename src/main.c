@@ -65,10 +65,42 @@ static const u8 META[] = {
 	128,
 };
 
-static void splash_screen(void){
-	register u8 x = 32, y = 32;
-	register s16 sin = 0, cos = 0x3FFF;
+typedef struct {
+	long px, py;
+	short vx, vy;
 	
+	short x, y;
+} Player;
+
+Player player = {32 << 8, 32 << 8};
+
+#define GRAVITY 64
+#define MAX_FALL_SPEED (4 << 8)
+
+static void update_player(){
+	// Apply gravity and clamp
+	player.vy += GRAVITY;
+	if(player.vy > MAX_FALL_SPEED) player.vy = MAX_FALL_SPEED;
+	
+	if(pad1.press & JOY_BTN_A_MASK){
+		player.vy = -1000;
+	}
+	
+	// apply velocity to position
+	player.px += player.vx;
+	player.py += player.vy;
+	
+	if(player.py > (128 << 8)){
+		player.py = (128 << 8);
+		if(player.vy > 0) player.vy = 0;
+	}
+	
+	// cache pixel position
+	player.x = player.px >> 8;
+	player.y = player.py >> 8;
+}
+
+static void splash_screen(void){
 	px_ppu_sync_disable();{
 		// Load the splash tilemap into nametable 0.
 		px_lz4_to_vram(NT_ADDR(0, 0, 0), MAP_SPLASH);
@@ -80,18 +112,22 @@ static void splash_screen(void){
 	
 	while(true){
 		read_gamepads();
-		if(JOY_LEFT (pad1.value)) x -= 1;
-		if(JOY_RIGHT(pad1.value)) x += 1;
-		if(JOY_DOWN (pad1.value)) y += 1;
-		if(JOY_UP   (pad1.value)) y -= 1;
+		if(JOY_LEFT (pad1.value)) player.px -= 1 << 8;
+		if(JOY_RIGHT(pad1.value)) player.px += 1 << 8;
+		if(JOY_DOWN (pad1.value)) player.py += 1 << 8;
+		if(JOY_UP   (pad1.value)) player.py -= 1 << 8;
 		if(JOY_BTN_A(pad1.press)) sound_play(SOUND_JUMP);
 		
-		// Draw a sprite.
-		meta_spr(x, y, 2, META);
+		px_profile_start();
+		update_player();
+		px_profile_end();
 		
-		PX.scroll_y = 480 + (sin >> 9);
-		sin += cos >> 6;
-		cos -= sin >> 6;
+		// Draw a sprite.
+		meta_spr(player.x, player.y, 2, META);
+		
+		// PX.scroll_y = 480 + (sin >> 9);
+		// sin += cos >> 6;
+		// cos -= sin >> 6;
 		
 		px_spr_end();
 		px_wait_nmi();
@@ -120,7 +156,7 @@ void main(void){
 	
 	music_init(&MUSIC);
 	sound_init(&SOUNDS);
-	music_play(0);
+	// music_play(0);
 	
 	// Jump to the splash screen state.
 	splash_screen();
