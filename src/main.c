@@ -57,6 +57,7 @@ void fade_from_black(const u8* palette, u8 delay){
 }
 
 void meta_spr(u8 x, u8 y, u8 pal, const u8* data);
+void meta_spr2(u8 x, s16 y, bool flipx, const u8* data);
 static const u8 META[] = {
 	-8, -8, 0xD0, 0,
 	 0, -8, 0xD1, 0,
