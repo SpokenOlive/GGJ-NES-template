@@ -57,6 +57,7 @@ void fade_from_black(const u8* palette, u8 delay){
 }
 
 void meta_spr(u8 x, u8 y, u8 pal, const u8* data);
+void meta_spr2(u8 x, s16 y, bool flipx, const u8* data);
 static const u8 META[] = {
 	-8, -16, 0xD0, 0,
 	 0, -16, 0xD1, 0,
@@ -219,12 +220,20 @@ static void update_player(){
 	px_debug_hex(flip);
 }
 
+static void load_map(){
+	// Load the splash tilemap into nametable 0.
+	px_addr(NT_ADDR(0, 0, 0));
+	px_blit(0x3C0, MAP_SPLASH + 0x000);
+	px_blit(0x040, MAP_SPLASH + 0x780);
+	px_addr(NT_ADDR(2, 0, 0));
+	px_blit(0x3C0, MAP_SPLASH + 0x3C0);
+	// px_blit(0x040, MAP_SPLASH + 0x7C0);
+}
+
 static void splash_screen(void){
+	static s16 sin = 0, cos = 0x3FFF;
 	px_ppu_sync_disable();{
-		// Load the splash tilemap into nametable 0.
-		//px_lz4_to_vram(NT_ADDR(0, 0, 0), MAP_SPLASH);
-		px_addr(NT_ADDR(0, 0, 0));
-		px_blit(1024,MAP_SPLASH);
+		load_map();
 	} px_ppu_sync_enable();
 	
 	// music_play(0);
