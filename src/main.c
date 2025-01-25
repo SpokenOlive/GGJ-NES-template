@@ -67,6 +67,7 @@ static const u8 META[] = {
 
 typedef struct {
 	long px, py;
+	long nx, ny;
 	short vx, vy;
 	u8 pallete;
 	u8 tileData;
@@ -90,18 +91,14 @@ static bool collision_check(short x, short y){
 	return false;
 }
 
-static int sign(long val) {
-	if (val > 0) return 1;
-	if (val < 0) return -1;
-	return val;
-}
+bool onFloor = false;
 
 static void update_player(){
 	// ACTUAL INPUT
 	if(JOY_LEFT (pad1.value)) player.px -= 1 << 8;
 	if(JOY_RIGHT(pad1.value)) player.px += 1 << 8;
-	if(JOY_DOWN (pad1.value)) player.py += 1 << 8;
-	if(JOY_UP   (pad1.value)) player.py -= 1 << 8;
+	//if(JOY_DOWN (pad1.value)) player.py += 1 << 8;
+	//if(JOY_UP   (pad1.value)) player.py -= 1 << 8;
 	if(JOY_BTN_A(pad1.press)) sound_play(SOUND_JUMP);
 
 	if(pad1.press & JOY_BTN_A_MASK & player.vy == 0){
@@ -109,49 +106,49 @@ static void update_player(){
 	}
 	
 	// Apply gravity and clamp
-	//player.vy += GRAVITY;
-	//if(player.vy > MAX_FALL_SPEED) player.vy = MAX_FALL_SPEED;
+	if (!collision_check(player.x,player.y+1)) {
+		player.vy += GRAVITY;
+		if(player.vy > MAX_FALL_SPEED) player.vy = MAX_FALL_SPEED;
+	}
 	
 	// apply velocity to position
 	player.px += player.vx;
 	player.py += player.vy;
 
 	// don't fall through the bottom of the screen
-	if(player.py > (240l << 8)){ // l makes it a LONG int
-		// player.py = (240l << 8);
-		// if(player.vy > 0) player.vy = 0;
+	if(player.py > (239l << 8)){ // l makes it a LONG int
+		player.py = (239l << 8);
+		if(player.vy > 0) player.vy = 0;
 	}
 	
 	// pallete collision debug
 	player.pallete = 2;
 
-	// update pixel positon
+	// update pixel positon x
 	player.x = player.px >> 8;
-
 	if (collision_check(player.x,player.y)) {
 		int deltaX = player.x % 8;
-		if (deltaX < 4) player.px -= deltaX << 8;
+		if (deltaX < 4) player.px -= (deltaX+1) << 8;
 		else player.px += (8-deltaX) << 8;
-		
-		if(player.vx > 0) player.vx = 0;
+		player.x = player.px >> 8;
+		player.vx = 0;
 		player.pallete = 3;
 	}
 
-	// 
+	// update pixel position y
 	player.y = player.py >> 8;
-
 	if (collision_check(player.x,player.y)) {
 		int deltaY = player.y % 8;
-		if (deltaY < 4) player.py -= deltaY << 8;
+		if (deltaY < 4) player.py -= (deltaY+1) << 8;
 		else player.py += (8-deltaY) << 8;
-
-		if(player.vy > 0) player.vy = 0;
+		player.y = player.py >> 8;
+		player.vy = 0;
 		player.pallete = 3;
 	}
 
 	// draw the tile hex on the screen for debugging;
 	px_debug_hex_addr = NT_ADDR(0,2,2);
-	px_debug_hex(player.tileData);
+	px_debug_hex(player.vy);
 }
 
 static void splash_screen(void){
@@ -168,7 +165,6 @@ static void splash_screen(void){
 	
 	while(true){
 		read_gamepads();
-		
 		
 		px_profile_start();
 		update_player();
