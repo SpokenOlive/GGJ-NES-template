@@ -75,14 +75,12 @@ $(ROM): ld65.cfg $(OBJS) $(PX_LIB)
 
 %.lz4: %.chr
 	tools/lz4x -f9 $< $@
-	touch $@ # dunno why lz4x doesn't update timestamps
 
 %.bin: %.tmx
 	python ext/pixler/tools/tmx2bin.py $< $@
 
 %.lz4: %.bin
 	tools/lz4x -f9 $< $@
-	touch $@ # dunno why lz4x doesn't update timestamps
 
 src/data.o: $(CHR:.png=.lz4) map/splash.lz4
 
