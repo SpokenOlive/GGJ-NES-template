@@ -31,7 +31,7 @@ CHR = \
 	chr/0.png \
 
 SONGS = \
-	audio/after_the_rain.txt \
+	audio/GameJamMusic.txt \
 
 default: $(ROM)
 rom: $(ROM)
