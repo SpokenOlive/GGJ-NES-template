@@ -4,14 +4,14 @@
 #include "pixler.h"
 #include "common.h"
 
-#define BG_COLOR 0x31
+#define BG_COLOR 0x37
 static const u8 PALETTE[] = {
-	BG_COLOR, 0x00, 0x10, 0x20,
+	BG_COLOR, 0x26, 0x15, 0x04,
 	BG_COLOR, 0x06, 0x16, 0x26,
 	BG_COLOR, 0x09, 0x19, 0x29,
 	BG_COLOR, 0x01, 0x11, 0x21,
 	
-	BG_COLOR, 0x00, 0x10, 0x20,
+	BG_COLOR, 0x26, 0x15, 0x04,
 	BG_COLOR, 0x06, 0x16, 0x26,
 	BG_COLOR, 0x09, 0x19, 0x29,
 	BG_COLOR, 0x01, 0x11, 0x21,
@@ -59,10 +59,10 @@ void fade_from_black(const u8* palette, u8 delay){
 void meta_spr(u8 x, u8 y, u8 pal, const u8* data);
 void meta_spr2(u8 x, s16 y, bool flipx, const u8* data);
 static const u8 META[] = {
-	-8, -16, 0xD0, 0,
-	 0, -16, 0xD1, 0,
-	-8,  -8, 0xD2, 0,
-	 0,  -8, 0xD3, 0,
+	-8, -16, 0x00, 0,
+	 0, -16, 0x01, 0,
+	-8,  -8, 0x3A, 0,
+	 0,  -8, 0x3B, 0,
 	128,
 };
 
@@ -209,7 +209,7 @@ static void splash_screen(void){
 		px_profile_end();
 		
 		// Draw a sprite.
-		meta_spr(player.x, player.y, player.pallete, META);
+		meta_spr(player.x, player.y, 0, META);
 		
 		// PX.scroll_y = 480 + (sin >> 9);
 		// sin += cos >> 6;
@@ -228,7 +228,7 @@ void main(void){
 	
 	// Set which tiles to use for the background and sprites.
 	px_bg_table(0);
-	px_spr_table(0);
+	px_spr_table(1);
 	
 	// Not using bank switching, but a good idea to set a reliable value at boot.
 	px_uxrom_select(0);
@@ -239,6 +239,7 @@ void main(void){
 	
 	// Decompress the tileset into character memory.
 	px_lz4_to_vram(CHR_ADDR(0, 0), CHR0);
+	px_lz4_to_vram(CHR_ADDR(1, 0), BOBY);
 	
 	music_init(&MUSIC);
 	sound_init(&SOUNDS);
