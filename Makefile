@@ -82,7 +82,7 @@ $(ROM): ld65.cfg $(OBJS) $(PX_LIB)
 %.lz4: %.bin
 	tools/lz4x -f9 $< $@
 
-src/data.o: $(CHR:.png=.lz4) map/splash.lz4
+src/data.o: $(CHR:.png=.lz4) map/splash.bin
 
 tiles: chr/0.chr
 	tools/chr2png "1D 00 10 20" chr/0.chr chr/0-pal0.png
