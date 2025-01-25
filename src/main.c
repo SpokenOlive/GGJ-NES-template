@@ -58,10 +58,10 @@ void fade_from_black(const u8* palette, u8 delay){
 
 void meta_spr(u8 x, u8 y, u8 pal, const u8* data);
 static const u8 META[] = {
-	-8, -8, 0xD0, 0,
-	 0, -8, 0xD1, 0,
-	-8,  0, 0xD2, 0,
-	 0,  0, 0xD2, 0,
+	-8, -16, 0xD0, 0,
+	 0, -16, 0xD1, 0,
+	-8,  -8, 0xD2, 0,
+	 0,  -8, 0xD3, 0,
 	128,
 };
 
@@ -74,10 +74,13 @@ typedef struct {
 	short x, y;
 } Player;
 
-Player player = {32 << 8, 32 << 8};
+Player player = {48 << 8, 224l << 8};
 
-#define GRAVITY 64
-#define MAX_FALL_SPEED (4 << 8)
+#define GRAVITY 16
+#define MAX_FALL_SPEED (2 << 8)
+#define SUPER_FALL_SPEED (6 << 8)
+#define JUMPSPEED -600
+#define JUMPTIMERMAX 31
 
 static bool collision_check(short x, short y){
 	// get tile we are colliding with 
@@ -92,23 +95,69 @@ static bool collision_check(short x, short y){
 }
 
 bool onFloor = false;
-
+int bounces = 4;
+int peakYPos = 0;
+int flop =  true;
+int jumpTimer = 0;
+int flip = false;
 static void update_player(){
 	// ACTUAL INPUT
 	if(JOY_LEFT (pad1.value)) player.px -= 1 << 8;
 	if(JOY_RIGHT(pad1.value)) player.px += 1 << 8;
-	//if(JOY_DOWN (pad1.value)) player.py += 1 << 8;
-	//if(JOY_UP   (pad1.value)) player.py -= 1 << 8;
-	if(JOY_BTN_A(pad1.press)) sound_play(SOUND_JUMP);
 
-	if(pad1.press & JOY_BTN_A_MASK & player.vy == 0){
-		player.vy = -1000;
-	}
-	
-	// Apply gravity and clamp
+	// if (collision_check(player.x,player.y+1)) {
+	// 	if (JOY_BTN_A(pad1.press)) {
+	// 		player.vy = JUMPSPEED;
+	// 		jumpTimer = JUMPTIMERMAX;
+	// 		sound_play(SOUND_JUMP);
+	// 	}
+	// }
+	// else {
+	// 	if (JOY_BTN_A(pad1.value) && jumpTimer > 0) {
+	// 		player.vy = JUMPSPEED;
+	// 		jumpTimer -= 1;
+	// 		if (jumpTimer == 0) {
+	// 			//player.vy = 0;
+	// 		}
+	// 	}
+	// 	else if (jumpTimer > 0) {
+	// 		jumpTimer = 0;
+	// 		player.vy = 0;
+	// 	}
+	// 	else {
+	// 		player.vy += GRAVITY;
+	// 		if(player.vy > MAX_FALL_SPEED) player.vy = MAX_FALL_SPEED;
+	// 	}
+	// }
+
+	// We are not on floor
 	if (!collision_check(player.x,player.y+1)) {
+		// Apply gravity and clamp
 		player.vy += GRAVITY;
-		if(player.vy > MAX_FALL_SPEED) player.vy = MAX_FALL_SPEED;
+		if (JOY_BTN_A(pad1.press)) {
+			player.vy = -JUMPSPEED;
+			flip = true;
+		}
+		
+		if (player.vy > 0 & flop) {
+			peakYPos = player.y;
+			flop = false;
+		}
+
+		if (flip) {
+			if(player.vy > SUPER_FALL_SPEED) player.vy = SUPER_FALL_SPEED;
+		}
+		else {
+			if(player.vy > MAX_FALL_SPEED) player.vy = MAX_FALL_SPEED;
+		}
+	}
+	// We are on floor
+	else {
+		if (JOY_BTN_A(pad1.press) & player.vy == 0){
+			flip = false;
+			player.vy = JUMPSPEED;
+			sound_play(SOUND_JUMP);
+		}
 	}
 	
 	// apply velocity to position
@@ -142,13 +191,32 @@ static void update_player(){
 		if (deltaY < 4) player.py -= (deltaY+1) << 8;
 		else player.py += (8-deltaY) << 8;
 		player.y = player.py >> 8;
-		player.vy = 0;
+
+		// if (flip) {
+		// 	flip = false;
+		// 	player.vy = JUMPSPEED;
+		// 	sound_play(SOUND_JUMP);
+		// }
+		// else {
+		// 	player.vy = 0;
+		// }
+
+		bounces++;
+		if (bounces <= 4) {
+			player.vy = JUMPSPEED/bounces;
+		}
+		else {
+			bounces = 1;
+		 	player.vy = 0;
+		}
+		
 		player.pallete = 3;
+		flop = true;
 	}
 
 	// draw the tile hex on the screen for debugging;
 	px_debug_hex_addr = NT_ADDR(0,2,2);
-	px_debug_hex(player.vy);
+	px_debug_hex(flip);
 }
 
 static void splash_screen(void){
