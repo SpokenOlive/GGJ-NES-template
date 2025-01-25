@@ -96,6 +96,7 @@ static bool collision_check(short x, short y){
 }
 
 bool onFloor = false;
+bool bounce = false;
 int bounces = 4;
 int peakYPos = 0;
 int flop =  true;
@@ -106,46 +107,16 @@ static void update_player(){
 	if(JOY_LEFT (pad1.value)) player.px -= 1 << 8;
 	if(JOY_RIGHT(pad1.value)) player.px += 1 << 8;
 
-	// if (collision_check(player.x,player.y+1)) {
-	// 	if (JOY_BTN_A(pad1.press)) {
-	// 		player.vy = JUMPSPEED;
-	// 		jumpTimer = JUMPTIMERMAX;
-	// 		sound_play(SOUND_JUMP);
-	// 	}
-	// }
-	// else {
-	// 	if (JOY_BTN_A(pad1.value) && jumpTimer > 0) {
-	// 		player.vy = JUMPSPEED;
-	// 		jumpTimer -= 1;
-	// 		if (jumpTimer == 0) {
-	// 			//player.vy = 0;
-	// 		}
-	// 	}
-	// 	else if (jumpTimer > 0) {
-	// 		jumpTimer = 0;
-	// 		player.vy = 0;
-	// 	}
-	// 	else {
-	// 		player.vy += GRAVITY;
-	// 		if(player.vy > MAX_FALL_SPEED) player.vy = MAX_FALL_SPEED;
-	// 	}
-	// }
-
 	// We are not on floor
 	if (!collision_check(player.x,player.y+1)) {
 		// Apply gravity and clamp
 		player.vy += GRAVITY;
 		if (JOY_BTN_A(pad1.press)) {
 			player.vy = -JUMPSPEED;
-			flip = true;
-		}
-		
-		if (player.vy > 0 & flop) {
-			peakYPos = player.y;
-			flop = false;
+			bounce = true;
 		}
 
-		if (flip) {
+		if (bounce) {
 			if(player.vy > SUPER_FALL_SPEED) player.vy = SUPER_FALL_SPEED;
 		}
 		else {
@@ -193,21 +164,11 @@ static void update_player(){
 		else player.py += (8-deltaY) << 8;
 		player.y = player.py >> 8;
 
-		// if (flip) {
-		// 	flip = false;
-		// 	player.vy = JUMPSPEED;
-		// 	sound_play(SOUND_JUMP);
-		// }
-		// else {
-		// 	player.vy = 0;
-		// }
-
-		bounces++;
-		if (bounces <= 4) {
-			player.vy = JUMPSPEED/bounces;
+		if (bounce) {
+			player.vy = JUMPSPEED+JUMPSPEED/6;
+			bounce = false;
 		}
 		else {
-			bounces = 1;
 		 	player.vy = 0;
 		}
 		
