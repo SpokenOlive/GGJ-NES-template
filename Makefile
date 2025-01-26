@@ -29,6 +29,7 @@ OBJS = \
 
 CHR = \
 	chr/0.png \
+	chr/Boby.png \
 
 SONGS = \
 	audio/GameJamMusic.txt \

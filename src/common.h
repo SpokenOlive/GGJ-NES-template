@@ -5,6 +5,8 @@
 
 // data.s declarations:
 extern u8 CHR0[];
+extern u8 BOBY[];
+
 extern u8 MAP_SPLASH[];
 
 // misc.s declarations:
