@@ -237,34 +237,34 @@ static void update_player(){
 	if(JOY_LEFT (pad1.value)) { player.px -= 1 << 8; walking = true; player.facingLeft = true; }
 	if(JOY_RIGHT(pad1.value)) { player.px += 1 << 8; walking = true; player.facingLeft = false; }
 	
-	meta_spr2(player.x, player.y, player.facingLeft, BOBY_IDLE[0]);
-	// if (onFloor) {
-	// 	if (walking) {
-	// 		meta_spr2(player.x, player.y, player.facingLeft, BOBY_RUN[(px_ticks/4) % BOBY_RUN_LEN]);
-	// 	}
-	// 	else {
-	// 		meta_spr2(player.x, player.y, player.facingLeft, BOBY_IDLE[(px_ticks/4) % BOBY_IDLE_LEN]);
-	// 	}
-	// }
-	// else {
-	// 	if (jumpState == JUMP_BOUNCE) {
-	// 		meta_spr2(player.x, player.y, player.facingLeft, BOBY_DIVE[(px_ticks/4) % BOBY_DIVE_LEN]);
-	// 	}
-	// 	else if (jumpState == JUMP_BOUNCED) {
-	// 		meta_spr2(player.x, player.y, player.facingLeft, BOBY_JUMP[(px_ticks/4) % BOBY_JUMP_LEN]);
-	// 	}
-	// 	else {
-	// 		if (player.vy < -100) {
-	// 			meta_spr2(player.x, player.y, player.facingLeft, BOBY_JUMP[(px_ticks/4) % BOBY_JUMP_LEN]);
-	// 		}
-	// 		else if (player.vy > 100) {
-	// 			meta_spr2(player.x, player.y, player.facingLeft, BOBY_FALL[(px_ticks/4) % BOBY_FALL_LEN]);
-	// 		}
-	// 		else {
-	// 			meta_spr2(player.x, player.y, player.facingLeft, BOBY_HANG[(px_ticks/4) % BOBY_HANG_LEN]);
-	// 		}
-	// 	}
-	// }
+	// meta_spr2(player.x, player.y, player.facingLeft, BOBY_IDLE[0]);
+	if (onFloor) {
+		if (walking) {
+			meta_spr2(player.x, player.y, player.facingLeft, BOBY_RUN[(px_ticks/4) % BOBY_RUN_LEN]);
+		}
+		else {
+			meta_spr2(player.x, player.y, player.facingLeft, BOBY_IDLE[(px_ticks/4) % BOBY_IDLE_LEN]);
+		}
+	}
+	else {
+		if (jumpState == JUMP_BOUNCE) {
+			meta_spr2(player.x, player.y, player.facingLeft, BOBY_DIVE[(px_ticks/4) % BOBY_DIVE_LEN]);
+		}
+		else if (jumpState == JUMP_BOUNCED) {
+			meta_spr2(player.x, player.y, player.facingLeft, BOBY_JUMP[(px_ticks/4) % BOBY_JUMP_LEN]);
+		}
+		else {
+			if (player.vy < -100) {
+				meta_spr2(player.x, player.y, player.facingLeft, BOBY_JUMP[(px_ticks/4) % BOBY_JUMP_LEN]);
+			}
+			else if (player.vy > 100) {
+				meta_spr2(player.x, player.y, player.facingLeft, BOBY_FALL[(px_ticks/4) % BOBY_FALL_LEN]);
+			}
+			else {
+				meta_spr2(player.x, player.y, player.facingLeft, BOBY_HANG[(px_ticks/4) % BOBY_HANG_LEN]);
+			}
+		}
+	}
 	
 	// We are not on floor
 	if (!onFloor) {
@@ -527,9 +527,9 @@ void main(void){
 	px_lz4_to_vram(CHR_ADDR(0, 0), CHR0);
 	px_lz4_to_vram(CHR_ADDR(1, 0), BOBY);
 	
-	music_init(&MUSIC);
-	sound_init(&SOUNDS);
-	music_play(0);
+	// music_init(&MUSIC);
+	// sound_init(&SOUNDS);
+	// music_play(0);
 	
 	// Jump to the splash screen state.
 	level_gamestate(1, 0);
