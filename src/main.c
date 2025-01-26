@@ -284,7 +284,6 @@ static void load_map(){
 }
 
 static void splash_screen(void){
-	static s16 sin = 0, cos = 0x3FFF;
 	px_ppu_sync_disable();{
 		load_map();
 	} px_ppu_sync_enable();
@@ -302,10 +301,12 @@ static void splash_screen(void){
 		// Draw a sprite.
 		meta_spr2(player.x, player.y, 0, BOBY_DIVE[(px_ticks/8) % BOBY_DIVE_LEN]);
 		
-		PX.scroll_y = player.y - 128;
-		// PX.scroll_y = 480 + (sin >> 9);
-		// sin += cos >> 6;
-		// cos -= sin >> 6;
+		{
+			int scroll = player.y - 128;
+			if(scroll < 0) scroll = 0;
+			if(scroll > 240) scroll = 240;
+			PX.scroll_y = scroll;
+		}
 		
 		px_profile_end();
 		px_spr_end();
