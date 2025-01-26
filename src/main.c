@@ -204,9 +204,11 @@ Player player = {};
 #define JUMPSPEED -550
 #define JUMPTIMERMAX 31
 
+static const u8* collisionMap;
+
 static bool collision_check(short x, short y){
 	// get tile we are colliding with 
-	player.tileData = MAP_SPLASH[32*(y>>3)+(x>>3)];
+	player.tileData = collisionMap[32*(y>>3)+(x>>3)];
 
 	// if we are colliding, change the pallete
 	if (player.tileData >= 104) {
@@ -418,6 +420,7 @@ static void level_gamestate(u8 level_idx, u8 door_idx){
 	int next_door = 0;
 	
 	level = LEVELS + level_idx;
+	collisionMap = level->map;
 	px_uxrom_select(level->rom_bank);
 	
 	px_ppu_sync_disable();{
@@ -531,5 +534,5 @@ void main(void){
 	music_play(0);
 	
 	// Jump to the splash screen state.
-	level_gamestate(1, 0);
+	level_gamestate(3, 0);
 }
