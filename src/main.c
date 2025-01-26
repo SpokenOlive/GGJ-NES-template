@@ -146,8 +146,8 @@ static const u8* BOBY_CROUCH[] = { // 25 - 29
 static const u8 BOBY_CROUCH_LEN = sizeof(BOBY_CROUCH)/sizeof(*BOBY_CROUCH);
 
 static const u8* BOBY_DIVE[] = { // 34 - 37
-	_BOBY_META + (224/16)*17,
-	_BOBY_META + (320/16)*17,
+//	_BOBY_META + (224/16)*17,
+	//_BOBY_META + (320/16)*17,
 	_BOBY_META + (336/16)*17, // loop these last two
 	_BOBY_META + (352/16)*17,
 };
@@ -207,7 +207,7 @@ static void update_player(){
 	}
 	else {
 		if (bounce) {
-			meta_spr2(player.x, player.y, player.facingLeft, BOBY_JUMP[(px_ticks/8) % BOBY_JUMP_LEN/2]);
+			meta_spr2(player.x, player.y, player.facingLeft, BOBY_DIVE[(px_ticks/8) % BOBY_DIVE_LEN/2]);
 		}
 		else {
 			meta_spr2(player.x, player.y, player.facingLeft, BOBY_JUMP[(px_ticks/8) % BOBY_JUMP_LEN/2]);
