@@ -29,6 +29,19 @@ OBJS = \
 
 CHR = \
 	chr/0.png \
+	chr/Boby.png \
+
+MAPS = \
+	map/splash.bin \
+	map/Level1.bin \
+	map/Level2.bin \
+	map/Level3.bin \
+	map/Level4.bin \
+	map/Level5.bin \
+	map/Level6.bin \
+	map/Level7.bin \
+	map/Level8.bin \
+	map/Level9.bin \
 
 SONGS = \
 	audio/GameJamMusic.txt \
@@ -82,7 +95,7 @@ $(ROM): ld65.cfg $(OBJS) $(PX_LIB)
 %.lz4: %.bin
 	tools/lz4x -f9 $< $@
 
-src/data.o: $(CHR:.png=.lz4) map/splash.bin
+src/data.o: $(CHR:.png=.lz4) $(MAPS)
 
 tiles: chr/0.chr
 	tools/chr2png "1D 00 10 20" chr/0.chr chr/0-pal0.png
@@ -103,7 +116,7 @@ tools:
 
 clean:
 	-rm $(ROM) $(BIN) $(OBJS) $(CHR:.png=.chr) $(CHR:.png=.lz4)
-	-rm map/splash.bin map/splash.lz4
+	-rm $(MAPS)
 	-rm $(SONGS:.txt=.s)
 	-rm $(ROM:.nes=.dbg) link.log
 	-rm romviz.png
