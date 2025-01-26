@@ -224,7 +224,7 @@ static void update_player(){
 		if(bounceTimer <= 0){
 			player.vy += GRAVITY;
 		}
-		if (JOY_DOWN(pad1.press)) {
+		if (JOY_BTN_A(pad1.press)) {
 			player.vy = -JUMPSPEED;
 			switch(jumpState){
 				case JUMP_READY:
@@ -299,9 +299,7 @@ static void update_player(){
 			sound_play(SOUND_JUMP);
 		}
 		else if (jumpState == JUMP_BOUNCED) {
-			player.vy = JUMPSPEED/3;
-			jumpState = JUMP_READY;
-			sound_play(SOUND_JUMP);
+			// TODO trigger squish animation here
 		}
 		else {
 		 	player.vy = 0;
