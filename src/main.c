@@ -121,20 +121,36 @@ static const u8* BOBY_RUN[] = {
 static const u8 BOBY_RUN_LEN = sizeof(BOBY_RUN)/sizeof(*BOBY_RUN);
 
 static const u8* BOBY_JUMP[] = {
-	_BOBY_META + (  0/16)*17,
-	_BOBY_META + (128/16)*17,
-	_BOBY_META + (144/16)*17,
+	//_BOBY_META + (  0/16)*17,
+	//_BOBY_META + (128/16)*17,
+	//_BOBY_META + (144/16)*17,
 	_BOBY_META + (160/16)*17,
 	_BOBY_META + (176/16)*17,
-	_BOBY_META + (192/16)*17,
-	_BOBY_META + (208/16)*17,
-	_BOBY_META + (224/16)*17,
-	_BOBY_META + (240/16)*17,
-	_BOBY_META + (256/16)*17,
-	_BOBY_META + (272/16)*17,
-	_BOBY_META + (128/16)*17,
+	// _BOBY_META + (192/16)*17,
+	// _BOBY_META + (208/16)*17,
+	// _BOBY_META + (224/16)*17,
+	// _BOBY_META + (240/16)*17,
+	// _BOBY_META + (256/16)*17,
+	// _BOBY_META + (272/16)*17,
+	// _BOBY_META + (128/16)*17,
 };
 static const u8 BOBY_JUMP_LEN = sizeof(BOBY_JUMP)/sizeof(*BOBY_JUMP);
+
+static const u8* BOBY_FALL[] = {
+	//_BOBY_META + (  0/16)*17,
+	//_BOBY_META + (128/16)*17,
+	//_BOBY_META + (144/16)*17,
+	//_BOBY_META + (160/16)*17,
+	//_BOBY_META + (176/16)*17,
+	// _BOBY_META + (192/16)*17,
+	 _BOBY_META + (208/16)*17,
+	 _BOBY_META + (224/16)*17,
+	// _BOBY_META + (240/16)*17,
+	// _BOBY_META + (256/16)*17,
+	// _BOBY_META + (272/16)*17,
+	// _BOBY_META + (128/16)*17,
+};
+static const u8 BOBY_FALL_LEN = sizeof(BOBY_FALL)/sizeof(*BOBY_FALL);
 
 static const u8* BOBY_CROUCH[] = { // 25 - 29
 	_BOBY_META + (  0/16)*17,
@@ -212,7 +228,8 @@ static void update_player(){
 	}
 	else {
 		if (jumpState == JUMP_BOUNCE) {
-			meta_spr2(player.x, player.y, player.facingLeft, BOBY_JUMP[(px_ticks/4) % BOBY_JUMP_LEN/2]);
+				meta_spr2(player.x, player.y, player.facingLeft, BOBY_JUMP[(px_ticks/4) % BOBY_JUMP_LEN/2]);
+			
 		}
 		else {
 			meta_spr2(player.x, player.y, player.facingLeft, BOBY_JUMP[(px_ticks/4) % BOBY_JUMP_LEN/2]);
