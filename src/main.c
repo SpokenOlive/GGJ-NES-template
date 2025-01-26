@@ -528,7 +528,7 @@ void main(void){
 	
 	music_init(&MUSIC);
 	sound_init(&SOUNDS);
-	// music_play(0);
+	music_play(0);
 	
 	// Jump to the splash screen state.
 	level_gamestate(1, 0);
