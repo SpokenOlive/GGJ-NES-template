@@ -209,7 +209,7 @@ static bool collision_check(short x, short y){
 	player.tileData = MAP_SPLASH[32*(y>>3)+(x>>3)];
 
 	// if we are colliding, change the pallete
-	if (player.tileData != 0) {
+	if (player.tileData >= 104) {
 		return true;
 	}
 	
