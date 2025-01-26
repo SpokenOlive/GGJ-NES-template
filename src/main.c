@@ -156,8 +156,11 @@ static const u8 BOBY_DIVE_LEN = sizeof(BOBY_DIVE)/sizeof(*BOBY_DIVE);
 typedef struct {
 	long px, py;
 	short vx, vy;
+	bool facingLeft;
 	u8 pallete;
 	u8 tileData;
+	u8* curSprite;
+	u8 curAnimLen;
 	short x, y;
 } Player;
 
@@ -166,7 +169,7 @@ Player player = {48 << 8, 400l << 8};
 #define GRAVITY 16
 #define MAX_FALL_SPEED (2 << 8)
 #define SUPER_FALL_SPEED (4 << 8)
-#define JUMPSPEED -500
+#define JUMPSPEED -550
 #define JUMPTIMERMAX 31
 
 static bool collision_check(short x, short y){
@@ -189,9 +192,27 @@ int flop =  true;
 int bounceTimer = 0;
 int flip = false;
 static void update_player(){
+	bool walking = false;
 	// ACTUAL INPUT
-	if(JOY_LEFT (pad1.value)) player.px -= 1 << 8;
-	if(JOY_RIGHT(pad1.value)) player.px += 1 << 8;
+	if(JOY_LEFT (pad1.value)) { player.px -= 1 << 8; walking = true; player.facingLeft = true; }
+	if(JOY_RIGHT(pad1.value)) { player.px += 1 << 8; walking = true; player.facingLeft = false; }
+
+	if (onFloor) {
+		if (walking) {
+			meta_spr2(player.x, player.y, player.facingLeft, BOBY_RUN[(px_ticks/8) % BOBY_RUN_LEN]);
+		}
+		else {
+			meta_spr2(player.x, player.y, player.facingLeft, BOBY_IDLE[(px_ticks/8) % BOBY_IDLE_LEN]);
+		}
+	}
+	else {
+		if (bounce) {
+			meta_spr2(player.x, player.y, player.facingLeft, BOBY_JUMP[(px_ticks/8) % BOBY_JUMP_LEN/2]);
+		}
+		else {
+			meta_spr2(player.x, player.y, player.facingLeft, BOBY_JUMP[(px_ticks/8) % BOBY_JUMP_LEN/2]);
+		}
+	}
 
 	// We are not on floor
 	if (!collision_check(player.x,player.y+1)) {
@@ -214,6 +235,7 @@ static void update_player(){
 	else {
 		if (JOY_BTN_B(pad1.press)){
 			flip = false;
+			onFloor = false;
 			player.vy = JUMPSPEED;
 			sound_play(SOUND_JUMP);
 		}
@@ -252,7 +274,7 @@ static void update_player(){
 		if (deltaY < 4) player.py -= (deltaY+1) << 8;
 		else player.py += (8-deltaY) << 8;
 		player.y = player.py >> 8;
-
+		onFloor = true;
 		if (bounce) {
 			player.vy = JUMPSPEED;
 			bounce = false;
@@ -303,7 +325,7 @@ static void splash_screen(void){
 		update_player();
 		
 		// Draw a sprite.
-		meta_spr2(player.x, player.y, 0, BOBY_DIVE[(px_ticks/8) % BOBY_DIVE_LEN]);
+		//meta_spr2(player.x, player.y, player.facingLeft, player.curSprite[(px_ticks/8) % player.curAnimLen]);
 		
 		{
 			int scroll = player.y - 128;
