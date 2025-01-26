@@ -204,12 +204,14 @@ Player player = {};
 #define JUMPSPEED -550
 #define JUMPTIMERMAX 31
 
+static const u8* collisionMap;
+
 static bool collision_check(short x, short y){
 	// get tile we are colliding with 
-	player.tileData = MAP_SPLASH[32*(y>>3)+(x>>3)];
+	player.tileData = collisionMap[32*(y>>3)+(x>>3)];
 
 	// if we are colliding, change the pallete
-	if (player.tileData >= 104) {
+	if (player.tileData >= 192) {
 		return true;
 	}
 	
@@ -234,34 +236,35 @@ static void update_player(){
 	// ACTUAL INPUT
 	if(JOY_LEFT (pad1.value)) { player.px -= 1 << 8; walking = true; player.facingLeft = true; }
 	if(JOY_RIGHT(pad1.value)) { player.px += 1 << 8; walking = true; player.facingLeft = false; }
-
-	if (onFloor) {
-		if (walking) {
-			meta_spr2(player.x, player.y, player.facingLeft, BOBY_RUN[(px_ticks/4) % BOBY_RUN_LEN]);
-		}
-		else {
-			meta_spr2(player.x, player.y, player.facingLeft, BOBY_IDLE[(px_ticks/4) % BOBY_IDLE_LEN]);
-		}
-	}
-	else {
-		if (jumpState == JUMP_BOUNCE) {
-			meta_spr2(player.x, player.y, player.facingLeft, BOBY_DIVE[(px_ticks/4) % BOBY_DIVE_LEN]);
-		}
-		else if (jumpState == JUMP_BOUNCED) {
-			meta_spr2(player.x, player.y, player.facingLeft, BOBY_JUMP[(px_ticks/4) % BOBY_JUMP_LEN]);
-		}
-		else {
-			if (player.vy < -100) {
-				meta_spr2(player.x, player.y, player.facingLeft, BOBY_JUMP[(px_ticks/4) % BOBY_JUMP_LEN]);
-			}
-			else if (player.vy > 100) {
-				meta_spr2(player.x, player.y, player.facingLeft, BOBY_FALL[(px_ticks/4) % BOBY_FALL_LEN]);
-			}
-			else {
-				meta_spr2(player.x, player.y, player.facingLeft, BOBY_HANG[(px_ticks/4) % BOBY_HANG_LEN]);
-			}
-		}
-	}
+	
+	meta_spr2(player.x, player.y, player.facingLeft, BOBY_IDLE[0]);
+	// if (onFloor) {
+	// 	if (walking) {
+	// 		meta_spr2(player.x, player.y, player.facingLeft, BOBY_RUN[(px_ticks/4) % BOBY_RUN_LEN]);
+	// 	}
+	// 	else {
+	// 		meta_spr2(player.x, player.y, player.facingLeft, BOBY_IDLE[(px_ticks/4) % BOBY_IDLE_LEN]);
+	// 	}
+	// }
+	// else {
+	// 	if (jumpState == JUMP_BOUNCE) {
+	// 		meta_spr2(player.x, player.y, player.facingLeft, BOBY_DIVE[(px_ticks/4) % BOBY_DIVE_LEN]);
+	// 	}
+	// 	else if (jumpState == JUMP_BOUNCED) {
+	// 		meta_spr2(player.x, player.y, player.facingLeft, BOBY_JUMP[(px_ticks/4) % BOBY_JUMP_LEN]);
+	// 	}
+	// 	else {
+	// 		if (player.vy < -100) {
+	// 			meta_spr2(player.x, player.y, player.facingLeft, BOBY_JUMP[(px_ticks/4) % BOBY_JUMP_LEN]);
+	// 		}
+	// 		else if (player.vy > 100) {
+	// 			meta_spr2(player.x, player.y, player.facingLeft, BOBY_FALL[(px_ticks/4) % BOBY_FALL_LEN]);
+	// 		}
+	// 		else {
+	// 			meta_spr2(player.x, player.y, player.facingLeft, BOBY_HANG[(px_ticks/4) % BOBY_HANG_LEN]);
+	// 		}
+	// 	}
+	// }
 	
 	// We are not on floor
 	if (!onFloor) {
@@ -418,6 +421,7 @@ static void level_gamestate(u8 level_idx, u8 door_idx){
 	int next_door = 0;
 	
 	level = LEVELS + level_idx;
+	collisionMap = level->map;
 	px_uxrom_select(level->rom_bank);
 	
 	px_ppu_sync_disable();{
@@ -463,7 +467,7 @@ static void level_gamestate(u8 level_idx, u8 door_idx){
 			// TODO door placeholder
 			meta_spr2(x, y, false, _BOBY_META);
 			
-			if(JOY_UP(pad1.press)){
+			if(JOY_UP(pad1.press) && !JOY_SELECT(pad1.value)){
 				if(abs(player.x - x) < 8 && abs(player.y - y) < 16){
 					next_level = level->doors[idx].level;
 					next_door = level->doors[idx].door;
