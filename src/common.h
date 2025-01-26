@@ -8,6 +8,15 @@ extern u8 CHR0[];
 extern u8 BOBY[];
 
 extern u8 MAP_SPLASH[];
+extern u8 MAP_LEVEL1[];
+extern u8 MAP_LEVEL2[];
+extern u8 MAP_LEVEL3[];
+extern u8 MAP_LEVEL4[];
+extern u8 MAP_LEVEL5[];
+extern u8 MAP_LEVEL6[];
+extern u8 MAP_LEVEL7[];
+extern u8 MAP_LEVEL8[];
+extern u8 MAP_LEVEL9[];
 
 // misc.s declarations:
 extern u8 ix, iy, idx, tmp;

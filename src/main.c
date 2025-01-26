@@ -164,7 +164,7 @@ typedef struct {
 	short x, y;
 } Player;
 
-Player player = {48 << 8, 400l << 8};
+Player player = {};
 
 #define GRAVITY 16
 #define MAX_FALL_SPEED (2 << 8)
@@ -314,22 +314,105 @@ static void update_player(){
 	px_debug_hex(flip);
 }
 
-static void load_map(){
-	// Load the splash tilemap into nametable 0.
-	px_addr(NT_ADDR(0, 0, 0));
-	px_blit(0x3C0, MAP_SPLASH + 0x000);
-	px_blit(0x040, MAP_SPLASH + 0x780);
-	px_addr(NT_ADDR(2, 0, 0));
-	px_blit(0x3C0, MAP_SPLASH + 0x3C0);
-	// px_blit(0x040, MAP_SPLASH + 0x7C0);
+static const u8* LEVEL_MAPS[] = {
+	NULL, // Use zero as "no level"
+	MAP_LEVEL1,
+	MAP_LEVEL2,
+	MAP_LEVEL3,
+	MAP_LEVEL4,
+	// MAP_LEVEL5,
+	// MAP_LEVEL6,
+	// MAP_LEVEL7,
+	// MAP_LEVEL8,
+	// MAP_LEVEL9,
+};
+
+static void Level1(void){
+}
+
+static void Level2(void){
+}
+
+static void Level3(void){
+}
+
+static void Level4(void){
+}
+
+static void Level5(void){
+}
+
+static void Level6(void){
+}
+
+static void Level7(void){
+}
+
+static void Level8(void){
+}
+
+static void Level9(void){
+}
+
+typedef void LevelCallback(void);
+static const LevelCallback* LEVEL_CALLBACKS[] = {
+	NULL, // Use zero as "no level"
+	Level1,
+	Level2,
+	Level3,
+	Level4,
+	Level5,
+	Level6,
+	Level7,
+	Level8,
+	Level9,
+};
+
+static void splash_screen(void);
+
+static void level_gamestate(u8 level_idx){
+	px_ppu_sync_disable();{
+		const u8* map = LEVEL_MAPS[level_idx];
+		// Load the splash tilemap into nametable 0.
+		px_addr(NT_ADDR(0, 0, 0));
+		px_blit(0x3C0, map + 0x000);
+		px_blit(0x040, map + 0x780);
+		px_addr(NT_ADDR(2, 0, 0));
+		px_blit(0x3C0, map + 0x3C0);
+		// px_blit(0x040, map + 0x7C0);
+	} px_ppu_sync_enable();
+	
+	fade_from_black(PALETTE, 4);
+	
+	memset(&player, 0, sizeof(player));
+	player.px = 48 << 8;
+	player.py = 400l << 8;
+	
+	while(true){
+		px_profile_start();
+		read_gamepads();
+		
+		update_player();
+		LEVEL_CALLBACKS[level_idx]();
+		
+		{
+			int scroll = player.y - 128;
+			if(scroll < 0) scroll = 0;
+			if(scroll > 240) scroll = 240;
+			PX.scroll_y = scroll;
+		}
+		
+		px_profile_end();
+		px_spr_end();
+		px_wait_nmi();
+	}
+	
+	splash_screen();
 }
 
 static void splash_screen(void){
 	px_ppu_sync_disable();{
-		load_map();
 	} px_ppu_sync_enable();
-	
-	// music_play(0);
 	
 	fade_from_black(PALETTE, 4);
 	
@@ -381,5 +464,5 @@ void main(void){
 	// music_play(0);
 	
 	// Jump to the splash screen state.
-	splash_screen();
+	level_gamestate(2);
 }
