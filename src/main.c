@@ -161,7 +161,7 @@ typedef struct {
 	short x, y;
 } Player;
 
-Player player = {48 << 8, 240l << 8};
+Player player = {48 << 8, 400l << 8};
 
 #define GRAVITY 16
 #define MAX_FALL_SPEED (2 << 8)
@@ -186,7 +186,7 @@ bool bounce = false;
 int bounced = 0;
 int peakYPos = 0;
 int flop =  true;
-int jumpTimer = 0;
+int bounceTimer = 0;
 int flip = false;
 static void update_player(){
 	// ACTUAL INPUT
@@ -197,9 +197,10 @@ static void update_player(){
 	if (!collision_check(player.x,player.y+1)) {
 		// Apply gravity and clamp
 		player.vy += GRAVITY;
-		if (JOY_BTN_A(pad1.press)) {
+		if (JOY_BTN_B(pad1.press) && !bounced) {
 			player.vy = -JUMPSPEED;
 			bounce = true;
+			bounceTimer = 0;
 		}
 
 		if (bounce) {
@@ -211,7 +212,7 @@ static void update_player(){
 	}
 	// We are on floor
 	else {
-		if (JOY_BTN_A(pad1.press) & player.vy == 0){
+		if (JOY_BTN_B(pad1.press)){
 			flip = false;
 			player.vy = JUMPSPEED;
 			sound_play(SOUND_JUMP);
@@ -235,6 +236,14 @@ static void update_player(){
 		player.vx = 0;
 		player.pallete = 3;
 	}
+	
+	if(bounce){
+		bounceTimer += 1;
+	}
+	if(bounced && bounceTimer > 0){
+		bounceTimer -= 1;
+		player.vy = JUMPSPEED;
+	}
 
 	// update pixel position y
 	player.y = player.py >> 8;
@@ -245,13 +254,15 @@ static void update_player(){
 		player.y = player.py >> 8;
 
 		if (bounce) {
-			player.vy = JUMPSPEED+JUMPSPEED/4;
+			player.vy = JUMPSPEED;
 			bounce = false;
 			bounced = true;
+			sound_play(SOUND_JUMP);
 		}
 		else if (bounced) {
 			player.vy = JUMPSPEED/3;
 			bounced = false;
+			sound_play(SOUND_JUMP);
 		}
 		else {
 		 	player.vy = 0;
