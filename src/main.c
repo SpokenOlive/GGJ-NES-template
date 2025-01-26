@@ -209,7 +209,7 @@ static bool collision_check(short x, short y){
 	player.tileData = MAP_SPLASH[32*(y>>3)+(x>>3)];
 
 	// if we are colliding, change the pallete
-	if (player.tileData != 0) {
+	if (player.tileData >= 104) {
 		return true;
 	}
 	
@@ -343,6 +343,7 @@ static void update_player(){
 			sound_play(SOUND_JUMP);
 		}
 		else if (jumpState == JUMP_BOUNCED) {
+			jumpState = JUMP_READY;
 			// TODO trigger squish animation here
 		}
 		else {
@@ -357,19 +358,6 @@ static void update_player(){
 	px_debug_hex_addr = NT_ADDR(0,2,2);
 	px_debug_hex(flip);
 }
-
-static const u8* LEVEL_MAPS[] = {
-	NULL, // Use zero as "no level"
-	MAP_LEVEL1,
-	MAP_LEVEL2,
-	MAP_LEVEL3,
-	MAP_LEVEL4,
-	// MAP_LEVEL5,
-	// MAP_LEVEL6,
-	// MAP_LEVEL7,
-	// MAP_LEVEL8,
-	// MAP_LEVEL9,
-};
 
 static void Level1(void){
 }
@@ -399,24 +387,41 @@ static void Level9(void){
 }
 
 typedef void LevelCallback(void);
-static const LevelCallback* LEVEL_CALLBACKS[] = {
-	NULL, // Use zero as "no level"
-	Level1,
-	Level2,
-	Level3,
-	Level4,
-	Level5,
-	Level6,
-	Level7,
-	Level8,
-	Level9,
+typedef struct {
+	const u8* map;
+	u8 rom_bank;
+	LevelCallback* update;
+	struct {
+		u16 x, y;
+		u8 level, door;
+	} doors[4];
+} LevelDef;
+
+static const LevelDef LEVELS[] = {
+	{}, // Use zero as "no level"
+	{MAP_LEVEL1, 1, Level1, {{48, 464, 9, 1}, {220, 464, 2, 0}}},
+	{MAP_LEVEL2, 1, Level2, {{48, 464, 1, 1}, {220, 464, 3, 0}}},
+	{MAP_LEVEL3, 1, Level3, {{48, 464, 2, 1}, {220, 464, 4, 0}}},
+	{MAP_LEVEL4, 1, Level4, {{48, 464, 3, 1}, {220, 464, 5, 0}}},
+	{MAP_LEVEL5, 2, Level5, {{48, 464, 4, 1}, {220, 464, 6, 0}}},
+	{MAP_LEVEL6, 2, Level6, {{48, 464, 5, 1}, {220, 464, 7, 0}}},
+	{MAP_LEVEL7, 2, Level7, {{48, 464, 6, 1}, {220, 464, 8, 0}}},
+	{MAP_LEVEL8, 2, Level8, {{48, 464, 7, 1}, {220, 464, 9, 0}}},
+	{MAP_LEVEL9, 2, Level9, {{48, 464, 8, 1}, {220, 464, 1, 0}}},
 };
 
 static void splash_screen(void);
 
-static void level_gamestate(u8 level_idx){
+static void level_gamestate(u8 level_idx, u8 door_idx){
+	static const LevelDef* level;
+	int next_level = 0;
+	int next_door = 0;
+	
+	level = LEVELS + level_idx;
+	px_uxrom_select(level->rom_bank);
+	
 	px_ppu_sync_disable();{
-		const u8* map = LEVEL_MAPS[level_idx];
+		const u8* map = level->map;
 		// Load the splash tilemap into nametable 0.
 		px_addr(NT_ADDR(0, 0, 0));
 		px_blit(0x3C0, map + 0x000);
@@ -429,15 +434,20 @@ static void level_gamestate(u8 level_idx){
 	fade_from_black(PALETTE, 4);
 	
 	memset(&player, 0, sizeof(player));
-	player.px = 48 << 8;
-	player.py = 400l << 8;
+	player.px = (long)level->doors[door_idx].x << 8;
+	player.py = (long)level->doors[door_idx].y << 8;
 	
-	while(true){
+	while(next_level == 0){
 		px_profile_start();
 		read_gamepads();
 		
+		if(JOY_SELECT(pad1.value)){
+			if(JOY_UP  (pad1.press)) next_level = level_idx + 1;
+			if(JOY_DOWN(pad1.press)) next_level = level_idx - 1;
+		}
+		
 		update_player();
-		LEVEL_CALLBACKS[level_idx]();
+		level->update();
 		
 		{
 			int scroll = player.y - 128;
@@ -446,12 +456,27 @@ static void level_gamestate(u8 level_idx){
 			PX.scroll_y = scroll;
 		}
 		
+		for(idx = 0; idx < 4; idx++){
+			int x = level->doors[idx].x, y = level->doors[idx].y;
+			if(level->doors[idx].level == 0) break;
+			
+			// TODO door placeholder
+			meta_spr2(x, y, false, _BOBY_META);
+			
+			if(JOY_UP(pad1.press)){
+				if(abs(player.x - x) < 8 && abs(player.y - y) < 16){
+					next_level = level->doors[idx].level;
+					next_door = level->doors[idx].door;
+				}
+			}
+		}
+		
 		px_profile_end();
 		px_spr_end();
 		px_wait_nmi();
 	}
 	
-	splash_screen();
+	level_gamestate(next_level, next_door);
 }
 
 static void splash_screen(void){
@@ -492,21 +517,19 @@ void main(void){
 	px_bg_table(0);
 	px_spr_table(1);
 	
-	// Not using bank switching, but a good idea to set a reliable value at boot.
-	px_uxrom_select(0);
-	
 	// Black out the palette.
 	for(idx = 0; idx < 32; idx++) px_buffer_set_color(idx, 0x1D);
 	px_wait_nmi();
 	
 	// Decompress the tileset into character memory.
+	px_uxrom_select(0);
 	px_lz4_to_vram(CHR_ADDR(0, 0), CHR0);
 	px_lz4_to_vram(CHR_ADDR(1, 0), BOBY);
 	
 	music_init(&MUSIC);
 	sound_init(&SOUNDS);
-	// music_play(0);
+	music_play(0);
 	
 	// Jump to the splash screen state.
-	level_gamestate(1);
+	level_gamestate(1, 0);
 }
