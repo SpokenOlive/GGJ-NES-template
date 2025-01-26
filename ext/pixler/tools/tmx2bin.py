@@ -20,8 +20,8 @@ def attr_byte(i):
 	i0 = 4*(i % 8) + 128*(i//8)
 	return (attribs[i0] << 0) | (attribs[i0 + 2] << 2) | (attribs[i0 + 64] << 4) | (attribs[i0 + 66] << 6)
 
-if len(values)%960 == 0:
-	values += [attr_byte(i) for i in range(size//15)]
+#if len(values)%960 == 0:
+	#values += [attr_byte(i) for i in range(size//15)]
 
 format = "{0}B".format(len(values))
 data_u8 = struct.pack(format, *values)
