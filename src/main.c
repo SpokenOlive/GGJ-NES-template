@@ -184,9 +184,14 @@ static bool collision_check(short x, short y){
 	return false;
 }
 
+typedef enum {
+	JUMP_READY,
+	JUMP_BOUNCE,
+	JUMP_BOUNCED,
+} JumpState;
+
 bool onFloor = false;
-bool bounce = false;
-int bounced = 0;
+JumpState jumpState;
 int peakYPos = 0;
 int flop =  true;
 int bounceTimer = 0;
@@ -199,32 +204,44 @@ static void update_player(){
 
 	if (onFloor) {
 		if (walking) {
-			meta_spr2(player.x, player.y, player.facingLeft, BOBY_RUN[(px_ticks/8) % BOBY_RUN_LEN]);
+			meta_spr2(player.x, player.y, player.facingLeft, BOBY_RUN[(px_ticks/4) % BOBY_RUN_LEN]);
 		}
 		else {
-			meta_spr2(player.x, player.y, player.facingLeft, BOBY_IDLE[(px_ticks/8) % BOBY_IDLE_LEN]);
+			meta_spr2(player.x, player.y, player.facingLeft, BOBY_IDLE[(px_ticks/4) % BOBY_IDLE_LEN]);
 		}
 	}
 	else {
-		if (bounce) {
-			meta_spr2(player.x, player.y, player.facingLeft, BOBY_JUMP[(px_ticks/8) % BOBY_JUMP_LEN/2]);
+		if (jumpState == JUMP_BOUNCE) {
+			meta_spr2(player.x, player.y, player.facingLeft, BOBY_JUMP[(px_ticks/4) % BOBY_JUMP_LEN/2]);
 		}
 		else {
-			meta_spr2(player.x, player.y, player.facingLeft, BOBY_JUMP[(px_ticks/8) % BOBY_JUMP_LEN/2]);
+			meta_spr2(player.x, player.y, player.facingLeft, BOBY_JUMP[(px_ticks/4) % BOBY_JUMP_LEN/2]);
 		}
 	}
-
+	
 	// We are not on floor
 	if (!collision_check(player.x,player.y+1)) {
-		// Apply gravity and clamp
-		player.vy += GRAVITY;
-		if (JOY_BTN_B(pad1.press) && !bounced) {
+		if(bounceTimer <= 0){
+			player.vy += GRAVITY;
+		}
+		if (JOY_DOWN(pad1.press)) {
 			player.vy = -JUMPSPEED;
-			bounce = true;
-			bounceTimer = 0;
+			switch(jumpState){
+				case JUMP_READY:
+					bounceTimer = 0;
+					break;
+				case JUMP_BOUNCE:
+					// bounce is already started, ignore.
+					break;
+				case JUMP_BOUNCED:
+					// second bounce, add pentalty so you can't just chain bouncing higher and higher
+					bounceTimer = -10;
+					break;
+			}
+			jumpState = JUMP_BOUNCE;
 		}
 
-		if (bounce) {
+		if (jumpState == JUMP_BOUNCE) {
 			if(player.vy > SUPER_FALL_SPEED) player.vy = SUPER_FALL_SPEED;
 		}
 		else {
@@ -259,10 +276,10 @@ static void update_player(){
 		player.pallete = 3;
 	}
 	
-	if(bounce){
+	if(jumpState == JUMP_BOUNCE && player.vy >= MAX_FALL_SPEED){
 		bounceTimer += 1;
 	}
-	if(bounced && bounceTimer > 0){
+	if(jumpState == JUMP_BOUNCED && bounceTimer > 0){
 		bounceTimer -= 1;
 		player.vy = JUMPSPEED;
 	}
@@ -275,15 +292,15 @@ static void update_player(){
 		else player.py += (8-deltaY) << 8;
 		player.y = player.py >> 8;
 		onFloor = true;
-		if (bounce) {
+		if (jumpState == JUMP_BOUNCE) {
 			player.vy = JUMPSPEED;
-			bounce = false;
-			bounced = true;
+			jumpState = JUMP_BOUNCED;
+			// if(bounceTimer > 20) bounceTimer -= 20; else bounceTimer = 0;
 			sound_play(SOUND_JUMP);
 		}
-		else if (bounced) {
+		else if (jumpState == JUMP_BOUNCED) {
 			player.vy = JUMPSPEED/3;
-			bounced = false;
+			jumpState = JUMP_READY;
 			sound_play(SOUND_JUMP);
 		}
 		else {
