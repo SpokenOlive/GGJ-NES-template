@@ -299,6 +299,7 @@ static void update_player(){
 			sound_play(SOUND_JUMP);
 		}
 		else if (jumpState == JUMP_BOUNCED) {
+			jumpState = JUMP_READY;
 			// TODO trigger squish animation here
 		}
 		else {
