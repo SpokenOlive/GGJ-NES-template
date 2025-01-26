@@ -1,0 +1,55 @@
+# Dn-FamiTracker text export 0.5.1.1
+# Module version 0450
+
+# INFO block
+TITLE           ""
+AUTHOR          ""
+COPYRIGHT       ""
+
+# COMMENTS block
+COMMENT ""
+
+# PARAMS block
+MACHINE         0
+FRAMERATE       0
+EXPANSION       0
+VIBRATO         1
+SPLIT           32
+PLAYBACKRATE    0 16639
+
+# SEQUENCES block
+MACRO       0   1  -1  -1   0 : 13 10 4 3 2 3 3 4 0
+MACRO       1   0  -1  -1   0 : 0 0 0 0 0 0 0 0
+
+# DPCM SAMPLES block
+
+# DETUNETABLES block
+
+# GROOVES block
+
+# Tracks using default groove:
+
+# INSTRUMENTS block
+INST2A03   0     0  -1  -1  -1  -1 "Empty"
+INST2A03   1     1   0  -1  -1  -1 "Bubble"
+
+# track HEADER block
+TRACK   3   6 150 "New song"
+COLUMNS : 1 1 1 1 1
+
+# track FRAMES block
+ORDER 00 : 00 00 00 00 00
+
+# track PATTERNS block
+PATTERN 00
+ROW 00 : A-1 00 6 130 : ... .. . ... : ... .. . ... : ... .. . ... : ... .. . ...
+ROW 01 : ... .. . 755 : ... .. . ... : ... .. . ... : ... .. . ... : ... .. . ...
+ROW 02 : --- .. . ... : ... .. . ... : ... .. . ... : ... .. . ... : ... .. . ...
+
+# track BOOKMARKS block
+
+# JSON block
+
+# PARAMS_EMU block
+
+# End of export
