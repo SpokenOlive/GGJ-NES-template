@@ -136,11 +136,11 @@ static void update_player(){
 	player.px += player.vx;
 	player.py += player.vy;
 
-	// don't fall through the bottom of the screen
-	if(player.py > (239l << 8)){ // l makes it a LONG int
-		player.py = (239l << 8);
-		if(player.vy > 0) player.vy = 0;
-	}
+	// // don't fall through the bottom of the screen
+	// if(player.py > (239l << 8)){ // l makes it a LONG int
+	// 	player.py = (239l << 8);
+	// 	if(player.vy > 0) player.vy = 0;
+	// }
 	
 	// pallete collision debug
 	player.pallete = 2;
@@ -209,8 +209,9 @@ static void splash_screen(void){
 		px_profile_end();
 		
 		// Draw a sprite.
-		meta_spr(player.x, player.y, 0, META);
+		meta_spr2(player.x, player.y, 0, META);
 		
+		PX.scroll_y = player.y - 128;
 		// PX.scroll_y = 480 + (sin >> 9);
 		// sin += cos >> 6;
 		// cos -= sin >> 6;
