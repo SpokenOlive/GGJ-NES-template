@@ -166,7 +166,7 @@ Player player = {48 << 8, 240l << 8};
 #define GRAVITY 16
 #define MAX_FALL_SPEED (2 << 8)
 #define SUPER_FALL_SPEED (4 << 8)
-#define JUMPSPEED -500
+#define JUMPSPEED -550
 #define JUMPTIMERMAX 31
 
 static bool collision_check(short x, short y){
