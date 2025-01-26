@@ -490,13 +490,10 @@ static void splash_screen(void){
 	fade_from_black(PALETTE, 4);
 	
 	while(true){
-		px_profile_start();
+		// px_profile_start();
 		read_gamepads();
 		
 		update_player();
-		
-		// Draw a sprite.
-		//meta_spr2(player.x, player.y, player.facingLeft, player.curSprite[(px_ticks/8) % player.curAnimLen]);
 		
 		{
 			int scroll = player.y - 128;
