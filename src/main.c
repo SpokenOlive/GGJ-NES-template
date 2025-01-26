@@ -58,13 +58,100 @@ void fade_from_black(const u8* palette, u8 delay){
 
 void meta_spr(u8 x, u8 y, u8 pal, const u8* data);
 void meta_spr2(u8 x, s16 y, bool flipx, const u8* data);
-static const u8 META[] = {
-	-8, -16, 0x00, 0,
-	 0, -16, 0x01, 0,
-	-8,  -8, 0x3A, 0,
-	 0,  -8, 0x3B, 0,
-	128,
+
+#define BOBY_META_N(_idx_) \
+	-8, -16, 0x00 + (2*_idx_), 0, \
+	 0, -16, 0x01 + (2*_idx_), 0, \
+	-8,  -8, 0x3A + (2*_idx_), 0, \
+	 0,  -8, 0x3B + (2*_idx_), 0, \
+	 128, \
+	
+
+static const u8 _BOBY_META[] = {
+	BOBY_META_N(0x00)
+	BOBY_META_N(0x01)
+	BOBY_META_N(0x02)
+	BOBY_META_N(0x03)
+	BOBY_META_N(0x04)
+	BOBY_META_N(0x05)
+	BOBY_META_N(0x06)
+	BOBY_META_N(0x07)
+	BOBY_META_N(0x08)
+	BOBY_META_N(0x09)
+	BOBY_META_N(0x0A)
+	BOBY_META_N(0x0B)
+	BOBY_META_N(0x0C)
+	BOBY_META_N(0x0D)
+	BOBY_META_N(0x0E)
+	BOBY_META_N(0x0F)
+	BOBY_META_N(0x10)
+	BOBY_META_N(0x11)
+	BOBY_META_N(0x12)
+	BOBY_META_N(0x13)
+	BOBY_META_N(0x14)
+	BOBY_META_N(0x15)
+	BOBY_META_N(0x16)
+	BOBY_META_N(0x17)
+	BOBY_META_N(0x18)
+	BOBY_META_N(0x19)
+	BOBY_META_N(0x1A)
+	BOBY_META_N(0x1B)
+	BOBY_META_N(0x1C)
+	BOBY_META_N(0x1D)
 };
+
+static const u8* BOBY_IDLE[] = {
+	_BOBY_META +  (  0/16)*17,
+	_BOBY_META +  (  1/16)*17,
+	_BOBY_META +  (  2/16)*17,
+	_BOBY_META +  (  0/16)*17,
+	_BOBY_META +  (  1/16)*17,
+	_BOBY_META +  (  2/16)*17,
+};
+static const u8 BOBY_IDLE_LEN = sizeof(BOBY_IDLE)/sizeof(*BOBY_IDLE);
+
+static const u8* BOBY_RUN[] = {
+	_BOBY_META + ( 48/16)*17,
+	_BOBY_META + ( 64/16)*17,
+	_BOBY_META + ( 80/16)*17,
+	_BOBY_META + ( 96/16)*17,
+	_BOBY_META + (112/16)*17,
+	_BOBY_META + ( 80/16)*17,
+};
+static const u8 BOBY_RUN_LEN = sizeof(BOBY_RUN)/sizeof(*BOBY_RUN);
+
+static const u8* BOBY_JUMP[] = {
+	_BOBY_META + (  0/16)*17,
+	_BOBY_META + (128/16)*17,
+	_BOBY_META + (144/16)*17,
+	_BOBY_META + (160/16)*17,
+	_BOBY_META + (176/16)*17,
+	_BOBY_META + (192/16)*17,
+	_BOBY_META + (208/16)*17,
+	_BOBY_META + (224/16)*17,
+	_BOBY_META + (240/16)*17,
+	_BOBY_META + (256/16)*17,
+	_BOBY_META + (272/16)*17,
+	_BOBY_META + (128/16)*17,
+};
+static const u8 BOBY_JUMP_LEN = sizeof(BOBY_JUMP)/sizeof(*BOBY_JUMP);
+
+static const u8* BOBY_CROUCH[] = { // 25 - 29
+	_BOBY_META + (  0/16)*17,
+	_BOBY_META + (288/16)*17,
+	_BOBY_META + (304/16)*17,
+	_BOBY_META + (272/16)*17,
+	_BOBY_META + (128/16)*17,
+};
+static const u8 BOBY_CROUCH_LEN = sizeof(BOBY_CROUCH)/sizeof(*BOBY_CROUCH);
+
+static const u8* BOBY_DIVE[] = { // 34 - 37
+	_BOBY_META + (224/16)*17,
+	_BOBY_META + (320/16)*17,
+	_BOBY_META + (336/16)*17, // loop these last two
+	_BOBY_META + (352/16)*17,
+};
+static const u8 BOBY_DIVE_LEN = sizeof(BOBY_DIVE)/sizeof(*BOBY_DIVE);
 
 typedef struct {
 	long px, py;
@@ -190,7 +277,6 @@ static void load_map(){
 }
 
 static void splash_screen(void){
-	static s16 sin = 0, cos = 0x3FFF;
 	px_ppu_sync_disable();{
 		load_map();
 	} px_ppu_sync_enable();
@@ -200,20 +286,22 @@ static void splash_screen(void){
 	fade_from_black(PALETTE, 4);
 	
 	while(true){
+		px_profile_start();
 		read_gamepads();
 		
-		px_profile_start();
 		update_player();
-		px_profile_end();
 		
 		// Draw a sprite.
-		meta_spr2(player.x, player.y, 0, META);
+		meta_spr2(player.x, player.y, 0, BOBY_DIVE[(px_ticks/8) % BOBY_DIVE_LEN]);
 		
-		PX.scroll_y = player.y - 128;
-		// PX.scroll_y = 480 + (sin >> 9);
-		// sin += cos >> 6;
-		// cos -= sin >> 6;
+		{
+			int scroll = player.y - 128;
+			if(scroll < 0) scroll = 0;
+			if(scroll > 240) scroll = 240;
+			PX.scroll_y = scroll;
+		}
 		
+		px_profile_end();
 		px_spr_end();
 		px_wait_nmi();
 	}
