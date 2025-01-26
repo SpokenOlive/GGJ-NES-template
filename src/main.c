@@ -121,20 +121,52 @@ static const u8* BOBY_RUN[] = {
 static const u8 BOBY_RUN_LEN = sizeof(BOBY_RUN)/sizeof(*BOBY_RUN);
 
 static const u8* BOBY_JUMP[] = {
-	_BOBY_META + (  0/16)*17,
-	_BOBY_META + (128/16)*17,
-	_BOBY_META + (144/16)*17,
+	//_BOBY_META + (  0/16)*17,
+	//_BOBY_META + (128/16)*17,
+	//_BOBY_META + (144/16)*17,
 	_BOBY_META + (160/16)*17,
 	_BOBY_META + (176/16)*17,
-	_BOBY_META + (192/16)*17,
-	_BOBY_META + (208/16)*17,
-	_BOBY_META + (224/16)*17,
-	_BOBY_META + (240/16)*17,
-	_BOBY_META + (256/16)*17,
-	_BOBY_META + (272/16)*17,
-	_BOBY_META + (128/16)*17,
+	// _BOBY_META + (192/16)*17,
+	// _BOBY_META + (208/16)*17,
+	// _BOBY_META + (224/16)*17,
+	// _BOBY_META + (240/16)*17,
+	// _BOBY_META + (256/16)*17,
+	// _BOBY_META + (272/16)*17,
+	// _BOBY_META + (128/16)*17,
 };
 static const u8 BOBY_JUMP_LEN = sizeof(BOBY_JUMP)/sizeof(*BOBY_JUMP);
+
+static const u8* BOBY_FALL[] = {
+	//_BOBY_META + (  0/16)*17,
+	//_BOBY_META + (128/16)*17,
+	//_BOBY_META + (144/16)*17,
+	//_BOBY_META + (160/16)*17,
+	//_BOBY_META + (176/16)*17,
+	// _BOBY_META + (192/16)*17,
+	 _BOBY_META + (208/16)*17,
+	 _BOBY_META + (224/16)*17,
+	// _BOBY_META + (240/16)*17,
+	// _BOBY_META + (256/16)*17,
+	// _BOBY_META + (272/16)*17,
+	// _BOBY_META + (128/16)*17,
+};
+static const u8 BOBY_FALL_LEN = sizeof(BOBY_FALL)/sizeof(*BOBY_FALL);
+
+static const u8* BOBY_HANG[] = {
+	//_BOBY_META + (  0/16)*17,
+	//_BOBY_META + (128/16)*17,
+	//_BOBY_META + (144/16)*17,
+	//_BOBY_META + (160/16)*17,
+	//_BOBY_META + (176/16)*17,
+	_BOBY_META + (192/16)*17,
+	// _BOBY_META + (208/16)*17,
+	// _BOBY_META + (224/16)*17,
+	// _BOBY_META + (240/16)*17,
+	// _BOBY_META + (256/16)*17,
+	// _BOBY_META + (272/16)*17,
+	// _BOBY_META + (128/16)*17,
+};
+static const u8 BOBY_HANG_LEN = sizeof(BOBY_FALL)/sizeof(*BOBY_HANG);
 
 static const u8* BOBY_CROUCH[] = { // 25 - 29
 	_BOBY_META + (  0/16)*17,
@@ -198,6 +230,7 @@ int bounceTimer = 0;
 int flip = false;
 static void update_player(){
 	bool walking = false;
+	onFloor = collision_check(player.x,player.y+1);
 	// ACTUAL INPUT
 	if(JOY_LEFT (pad1.value)) { player.px -= 1 << 8; walking = true; player.facingLeft = true; }
 	if(JOY_RIGHT(pad1.value)) { player.px += 1 << 8; walking = true; player.facingLeft = false; }
@@ -212,15 +245,26 @@ static void update_player(){
 	}
 	else {
 		if (jumpState == JUMP_BOUNCE) {
-			meta_spr2(player.x, player.y, player.facingLeft, BOBY_JUMP[(px_ticks/4) % BOBY_JUMP_LEN/2]);
+			meta_spr2(player.x, player.y, player.facingLeft, BOBY_DIVE[(px_ticks/4) % BOBY_DIVE_LEN]);
+		}
+		else if (jumpState == JUMP_BOUNCED) {
+			meta_spr2(player.x, player.y, player.facingLeft, BOBY_JUMP[(px_ticks/4) % BOBY_JUMP_LEN]);
 		}
 		else {
-			meta_spr2(player.x, player.y, player.facingLeft, BOBY_JUMP[(px_ticks/4) % BOBY_JUMP_LEN/2]);
+			if (player.vy < -100) {
+				meta_spr2(player.x, player.y, player.facingLeft, BOBY_JUMP[(px_ticks/4) % BOBY_JUMP_LEN]);
+			}
+			else if (player.vy > 100) {
+				meta_spr2(player.x, player.y, player.facingLeft, BOBY_FALL[(px_ticks/4) % BOBY_FALL_LEN]);
+			}
+			else {
+				meta_spr2(player.x, player.y, player.facingLeft, BOBY_HANG[(px_ticks/4) % BOBY_HANG_LEN]);
+			}
 		}
 	}
 	
 	// We are not on floor
-	if (!collision_check(player.x,player.y+1)) {
+	if (!onFloor) {
 		if(bounceTimer <= 0){
 			player.vy += GRAVITY;
 		}
