@@ -402,7 +402,7 @@ typedef struct {
 
 static const LevelDef LEVELS[] = {
 	{}, // Use zero as "no level"
-	{MAP_LEVEL1, 1, Level1, {{48, 464, 9, 1}, {220, 464, 2, 0}}},
+	{MAP_LEVEL1, 1, Level1, {{192, 208, 2, 0}}},
 	{MAP_LEVEL2, 1, Level2, {{48, 464, 1, 1}, {220, 464, 3, 0}}},
 	{MAP_LEVEL3, 1, Level3, {{48, 464, 2, 1}, {220, 464, 4, 0}}},
 	{MAP_LEVEL4, 1, Level4, {{48, 464, 3, 1}, {220, 464, 5, 0}}},
