@@ -97,7 +97,7 @@ static bool collision_check(short x, short y){
 
 bool onFloor = false;
 bool bounce = false;
-int bounces = 4;
+int bounced = 0;
 int peakYPos = 0;
 int flop =  true;
 int jumpTimer = 0;
@@ -167,6 +167,11 @@ static void update_player(){
 		if (bounce) {
 			player.vy = JUMPSPEED+JUMPSPEED/6;
 			bounce = false;
+			bounced = true;
+		}
+		else if (bounced) {
+			player.vy = JUMPSPEED/4;
+			bounced = false;
 		}
 		else {
 		 	player.vy = 0;
