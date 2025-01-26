@@ -68,19 +68,18 @@ static const u8 META[] = {
 
 typedef struct {
 	long px, py;
-	long nx, ny;
 	short vx, vy;
 	u8 pallete;
 	u8 tileData;
 	short x, y;
 } Player;
 
-Player player = {48 << 8, 224l << 8};
+Player player = {48 << 8, 240l << 8};
 
 #define GRAVITY 16
 #define MAX_FALL_SPEED (2 << 8)
-#define SUPER_FALL_SPEED (6 << 8)
-#define JUMPSPEED -600
+#define SUPER_FALL_SPEED (4 << 8)
+#define JUMPSPEED -500
 #define JUMPTIMERMAX 31
 
 static bool collision_check(short x, short y){
@@ -135,12 +134,6 @@ static void update_player(){
 	// apply velocity to position
 	player.px += player.vx;
 	player.py += player.vy;
-
-	// // don't fall through the bottom of the screen
-	// if(player.py > (239l << 8)){ // l makes it a LONG int
-	// 	player.py = (239l << 8);
-	// 	if(player.vy > 0) player.vy = 0;
-	// }
 	
 	// pallete collision debug
 	player.pallete = 2;
@@ -165,12 +158,12 @@ static void update_player(){
 		player.y = player.py >> 8;
 
 		if (bounce) {
-			player.vy = JUMPSPEED+JUMPSPEED/6;
+			player.vy = JUMPSPEED+JUMPSPEED/4;
 			bounce = false;
 			bounced = true;
 		}
 		else if (bounced) {
-			player.vy = JUMPSPEED/4;
+			player.vy = JUMPSPEED/3;
 			bounced = false;
 		}
 		else {
