@@ -324,7 +324,7 @@ static void update_player(){
 		if(bounceTimer <= 0){
 			player.vy += GRAVITY;
 		}
-		if (JOY_BTN_A(pad1.press) && canSlam) {
+		if (JOY_BTN_B(pad1.press) && canSlam) {
 			player.vy = -JUMPSPEED;
 			switch(jumpState){
 				case JUMP_READY:
@@ -350,7 +350,7 @@ static void update_player(){
 	}
 	// We are on floor
 	else {
-		if (JOY_BTN_B(pad1.press) && canJump){
+		if (JOY_BTN_A(pad1.press) && canJump){
 			flip = false;
 			onFloor = false;
 			player.vy = JUMPSPEED;
@@ -616,7 +616,7 @@ static void level_gamestate(u8 level_idx, u8 door_idx){
 		if(JOY_SELECT(pad1.value)){
 			if(JOY_UP  (pad1.press)) next_level = level_idx + 1;
 			if(JOY_DOWN(pad1.press)) next_level = level_idx - 1;
-			if(JOY_BTN_B(pad1.press)) player.vy = -1000;
+			if(JOY_BTN_A(pad1.press)) player.vy = -1000;
 		}
 		
 		update_player();
@@ -630,7 +630,7 @@ static void level_gamestate(u8 level_idx, u8 door_idx){
 			if(door->level == 0) break;
 			
 			// TODO door placeholder
-			meta_spr2(door->x, door->y, false, _BOBY_META);
+			// meta_spr2(door->x, door->y, false, _BOBY_META);
 			
 			if(check_door(door)){
 				next_level = door->level;
