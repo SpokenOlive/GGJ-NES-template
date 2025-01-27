@@ -188,6 +188,22 @@ static const u8* BOBY_DIVE[] = { // 34 - 37
 };
 static const u8 BOBY_DIVE_LEN = sizeof(BOBY_DIVE)/sizeof(*BOBY_DIVE);
 
+static const u8 POWERUP0[] = {
+	-8, -16, 0x84, 0,
+	 0, -16, 0x85, 0,
+	-8,  -8, 0x9E, 0,
+	 0,  -8, 0x9F, 0,
+	 128,
+};
+
+static const u8 POWERUP1[] = {
+	-8, -16, 0x82, 0,
+	 0, -16, 0x83, 0,
+	-8,  -8, 0x9C, 0,
+	 0,  -8, 0x9D, 0,
+	 128,
+};
+
 #define BABY_META_N(_idx_) \
 	-8, -16, 0x00 + (2*_idx_), 0, \
 	 0, -16, 0x01 + (2*_idx_), 0, \
@@ -233,6 +249,9 @@ typedef enum {
 	JUMP_BOUNCE,
 	JUMP_BOUNCED,
 } JumpState;
+
+bool canJump = false;
+bool canSlam = false;
 
 bool onFloor = false;
 JumpState jumpState;
@@ -281,7 +300,7 @@ static void update_player(){
 		if(bounceTimer <= 0){
 			player.vy += GRAVITY;
 		}
-		if (JOY_BTN_A(pad1.press)) {
+		if (JOY_BTN_A(pad1.press) && canSlam) {
 			player.vy = -JUMPSPEED;
 			switch(jumpState){
 				case JUMP_READY:
@@ -307,7 +326,7 @@ static void update_player(){
 	}
 	// We are on floor
 	else {
-		if (JOY_BTN_B(pad1.press)){
+		if (JOY_BTN_B(pad1.press) && canJump){
 			flip = false;
 			onFloor = false;
 			player.vy = JUMPSPEED;
@@ -373,6 +392,12 @@ static void update_player(){
 }
 
 static void Level1(void){
+	if(!canJump){
+		meta_spr2(15*8, 55*8, false, (px_ticks & 4) ? POWERUP0 : POWERUP1);
+		if(abs(player.x - 15*8) < 8 && abs(player.y - 55*8) < 8){
+			canJump = true;
+		}
+	}
 }
 
 static void Level2(void){
@@ -559,4 +584,5 @@ void main(void){
 	
 	// Jump to the splash screen state.
 	level_gamestate(2, 2);
+	// level_gamestate(1, 0);
 }
