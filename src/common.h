@@ -18,6 +18,7 @@ extern u8 MAP_LEVEL6[];
 extern u8 MAP_LEVEL7[];
 extern u8 MAP_LEVEL8[];
 extern u8 MAP_LEVEL9[];
+extern u8 MAP_WIN[];
 
 // misc.s declarations:
 extern u8 ix, iy, idx, tmp;

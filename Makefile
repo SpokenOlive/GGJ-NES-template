@@ -43,6 +43,7 @@ MAPS = \
 	map/Level7.bin \
 	map/Level8.bin \
 	map/Level9.bin \
+	map/WinScreen.bin \
 
 SONGS = \
 	audio/GameJamMusic.txt \

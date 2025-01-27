@@ -205,11 +205,42 @@ static const u8 POWERUP1[] = {
 };
 
 #define BABY_META_N(_idx_) \
-	-8, -16, 0x00 + (2*_idx_), 0, \
-	 0, -16, 0x01 + (2*_idx_), 0, \
-	-8,  -8, 0x3A + (2*_idx_), 0, \
-	 0,  -8, 0x3B + (2*_idx_), 0, \
+	-8, -16, 0x74 + (2*_idx_), 0, \
+	 0, -16, 0x75 + (2*_idx_), 0, \
+	-8,  -8, 0x8E + (2*_idx_), 0, \
+	 0,  -8, 0x8F + (2*_idx_), 0, \
 	 128, \
+
+static const u8 _BABY_META[] = {
+	BABY_META_N(0)
+	BABY_META_N(1)
+	BABY_META_N(2)
+	BABY_META_N(3)
+	BABY_META_N(4)
+	BABY_META_N(5)
+	BABY_META_N(6)
+	BABY_META_N(7)
+	BABY_META_N(8)
+	BABY_META_N(9)
+	BABY_META_N(10)
+	BABY_META_N(11)
+	BABY_META_N(12)
+};
+
+static const u8* BABY_HEART[] = {
+	_BABY_META + 0*17,
+	_BABY_META + 1*17,
+	_BABY_META + 2*17,
+	_BABY_META + 3*17,
+};
+static const u8 BABY_HEART_LEN = sizeof(BABY_HEART)/sizeof(*BABY_HEART);
+
+static const u8* BABY_BUBBLE[] = {
+	_BABY_META + 4*17,
+	_BABY_META + 5*17,
+	_BABY_META + 6*17,
+};
+static const u8 BABY_BUBBLE_LEN = sizeof(BABY_BUBBLE)/sizeof(*BABY_BUBBLE);
 
 typedef struct {
 	long px, py;
@@ -436,6 +467,15 @@ static void Level8(void){
 static void Level9(void){
 }
 
+static void LevelWin(void){
+	meta_spr2( 50, 399, false, BABY_HEART[((px_ticks +  0)/8) % BABY_HEART_LEN]);
+	meta_spr2( 100, 399, false, BABY_HEART[((px_ticks +  8)/8) % BABY_HEART_LEN]);
+	meta_spr2( 170, 399, false, BABY_HEART[((px_ticks +  3)/8) % BABY_HEART_LEN]);
+	
+	meta_spr2( 6*8, 45*8, false, BABY_BUBBLE[((px_ticks +  20)/8) % BABY_BUBBLE_LEN]);
+	meta_spr2(26*8, 45*8, false, BABY_BUBBLE[((px_ticks +  20)/8) % BABY_BUBBLE_LEN]);
+}
+
 typedef void LevelCallback(void);
 typedef struct {
 	const u8* map;
@@ -471,7 +511,13 @@ static const LevelDef LEVELS[] = {
 		{12*8, 55*8, 3, 1}, // bottom boor
 		{ 6*8, 25*8, 7, 0}, // top door
 	}},
-	{MAP_LEVEL7, 2, Level7, {{25*8, 25*8, 6, 0}}},
+	{MAP_LEVEL7, 2, Level7, {
+		{25*8, 25*8, 6, 0}, // right door
+		{ 7*8, 25*8, 8, 0}, // left door
+	}},
+	{MAP_WIN, 2, LevelWin, {
+		{27*8, 49*8, 0, 0}
+	}},
 };
 
 static void splash_screen(void);
@@ -597,6 +643,6 @@ void main(void){
 	// music_play(0);
 	
 	// Jump to the splash screen state.
-	// level_gamestate(2, 2);
-	level_gamestate(1, 0);
+	level_gamestate(2, 2);
+	// level_gamestate(7, 1);
 }
