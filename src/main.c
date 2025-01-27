@@ -266,7 +266,6 @@ static void update_player(){
 	if(JOY_LEFT (pad1.value)) { player.px -= 1 << 8; walking = true; player.facingLeft = true; }
 	if(JOY_RIGHT(pad1.value)) { player.px += 1 << 8; walking = true; player.facingLeft = false; }
 	
-	// meta_spr2(player.x, player.y, player.facingLeft, BOBY_IDLE[0]);
 	if (onFloor) {
 		if (walking) {
 			meta_spr2(player.x, player.y, player.facingLeft, BOBY_RUN[(px_ticks/4) % BOBY_RUN_LEN]);
@@ -412,7 +411,7 @@ static void Level4(void){
 static void Level5(void){
 	if(!canSlam){
 		meta_spr2(16*8, 57*8, false, (px_ticks & 4) ? POWERUP0 : POWERUP1);
-		if(abs(player.x - 15*8) < 8 && abs(player.y - 55*8) < 8){
+		if(abs(player.x - 16*8) < 8 && abs(player.y - 57*8) < 8){
 			canSlam = true;
 		}
 	}
