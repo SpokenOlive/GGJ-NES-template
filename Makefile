@@ -30,6 +30,7 @@ OBJS = \
 CHR = \
 	chr/0.png \
 	chr/Boby.png \
+	chr/Baby_Boba.png \
 
 MAPS = \
 	map/splash.bin \

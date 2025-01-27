@@ -9,6 +9,7 @@
 
 inclz4 _CHR0, "chr/0.lz4"
 inclz4 _BOBY, "chr/Boby.lz4"
+inclz4 _BABY, "chr/Baby_Boba.lz4"
 
 .macro inclevel symbol, file
 	.export symbol

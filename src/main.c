@@ -4,14 +4,18 @@
 #include "pixler.h"
 #include "common.h"
 
-#define BG_COLOR 0x37
+
+// #define BG_COLOR 0x24
+#define BG_COLOR 0x2B
 static const u8 PALETTE[] = {
-	BG_COLOR, 0x26, 0x15, 0x04,
+	BG_COLOR, 0x3B, 0x1C, 0x0C,
+	// BG_COLOR, 0x2B, 0x14, 0x04,
 	BG_COLOR, 0x06, 0x16, 0x26,
 	BG_COLOR, 0x09, 0x19, 0x29,
 	BG_COLOR, 0x01, 0x11, 0x21,
 	
-	BG_COLOR, 0x26, 0x15, 0x04,
+	BG_COLOR, 0x3B, 0x1C, 0x0C,
+	// BG_COLOR, 0x33, 0x14, 0x04,
 	BG_COLOR, 0x06, 0x16, 0x26,
 	BG_COLOR, 0x09, 0x19, 0x29,
 	BG_COLOR, 0x01, 0x11, 0x21,
@@ -65,7 +69,6 @@ void meta_spr2(u8 x, s16 y, bool flipx, const u8* data);
 	-8,  -8, 0x3A + (2*_idx_), 0, \
 	 0,  -8, 0x3B + (2*_idx_), 0, \
 	 128, \
-	
 
 static const u8 _BOBY_META[] = {
 	BOBY_META_N(0x00)
@@ -185,6 +188,29 @@ static const u8* BOBY_DIVE[] = { // 34 - 37
 };
 static const u8 BOBY_DIVE_LEN = sizeof(BOBY_DIVE)/sizeof(*BOBY_DIVE);
 
+static const u8 POWERUP0[] = {
+	-8, -16, 0x84, 0,
+	 0, -16, 0x85, 0,
+	-8,  -8, 0x9E, 0,
+	 0,  -8, 0x9F, 0,
+	 128,
+};
+
+static const u8 POWERUP1[] = {
+	-8, -16, 0x82, 0,
+	 0, -16, 0x83, 0,
+	-8,  -8, 0x9C, 0,
+	 0,  -8, 0x9D, 0,
+	 128,
+};
+
+#define BABY_META_N(_idx_) \
+	-8, -16, 0x00 + (2*_idx_), 0, \
+	 0, -16, 0x01 + (2*_idx_), 0, \
+	-8,  -8, 0x3A + (2*_idx_), 0, \
+	 0,  -8, 0x3B + (2*_idx_), 0, \
+	 128, \
+
 typedef struct {
 	long px, py;
 	short vx, vy;
@@ -223,6 +249,9 @@ typedef enum {
 	JUMP_BOUNCE,
 	JUMP_BOUNCED,
 } JumpState;
+
+bool canJump = false;
+bool canSlam = false;
 
 bool onFloor = false;
 JumpState jumpState;
@@ -271,7 +300,7 @@ static void update_player(){
 		if(bounceTimer <= 0){
 			player.vy += GRAVITY;
 		}
-		if (JOY_BTN_A(pad1.press)) {
+		if (JOY_BTN_A(pad1.press) && canSlam) {
 			player.vy = -JUMPSPEED;
 			switch(jumpState){
 				case JUMP_READY:
@@ -297,7 +326,7 @@ static void update_player(){
 	}
 	// We are on floor
 	else {
-		if (JOY_BTN_B(pad1.press)){
+		if (JOY_BTN_B(pad1.press) && canJump){
 			flip = false;
 			onFloor = false;
 			player.vy = JUMPSPEED;
@@ -363,6 +392,12 @@ static void update_player(){
 }
 
 static void Level1(void){
+	if(!canJump){
+		meta_spr2(15*8, 55*8, false, (px_ticks & 4) ? POWERUP0 : POWERUP1);
+		if(abs(player.x - 15*8) < 8 && abs(player.y - 55*8) < 8){
+			canJump = true;
+		}
+	}
 }
 
 static void Level2(void){
@@ -375,6 +410,12 @@ static void Level4(void){
 }
 
 static void Level5(void){
+	if(!canSlam){
+		meta_spr2(16*8, 57*8, false, (px_ticks & 4) ? POWERUP0 : POWERUP1);
+		if(abs(player.x - 15*8) < 8 && abs(player.y - 55*8) < 8){
+			canSlam = true;
+		}
+	}
 }
 
 static void Level6(void){
@@ -402,15 +443,30 @@ typedef struct {
 
 static const LevelDef LEVELS[] = {
 	{}, // Use zero as "no level"
-	{MAP_LEVEL1, 1, Level1, {{192, 208, 2, 1}}},
-	{MAP_LEVEL2, 1, Level2, {{10*16, 13*16, 3, 0}, 	{6*16, 26*16, 1, 0}}},
-	{MAP_LEVEL3, 1, Level3, {{4*16, 18*16, 2, 0}, 	{11*16, 13*16, 6, 0}, 	{8*16, 27*16, 4, 0}}},
-	{MAP_LEVEL4, 1, Level4, {{8*16, 13*16, 3, 12}, 	{12*16, 16*16, 5, 0}}},
+<<<<<<< Updated upstream
+	{MAP_LEVEL1, 1, Level1, {
+		{192, 208, 2, 0}, // top door
+	}},
+	{MAP_LEVEL2, 1, Level2, {
+		{11*8, 51*8, 1, 0}, // left door
+		{21*8, 25*8, 3, 0}, // top door
+		{22*8, 47*8, 0, 0}, // initial spawn
+	}},
+	{MAP_LEVEL3, 1, Level3, {
+		{ 4*16, 18*16, 2, 1}, // left door
+		{11*16, 13*16, 6, 0}, // right door
+		{ 8*16, 27*16, 4, 0}, // bottom door
+	}},
+	{MAP_LEVEL4, 1, Level4, {
+		{ 8*16, 15*16, 3, 2}, // top door
+		{12*16, 16*16, 5, 0}, // right door
+	}},
 	{MAP_LEVEL5, 2, Level5, {{7*16, 13*16, 4, 1}}},
-	{MAP_LEVEL6, 2, Level6, {{7*16, 13*16, 5, 1}}},//, {4*16, 13*16, 7, 0}}},
-	{MAP_LEVEL7, 2, Level7, {{48, 464, 6, 1}, {220, 464, 8, 0}}},
-	{MAP_LEVEL8, 2, Level8, {{48, 464, 7, 1}, {220, 464, 9, 0}}},
-	{MAP_LEVEL9, 2, Level9, {{48, 464, 8, 1}, {220, 464, 1, 0}}},
+	{MAP_LEVEL6, 2, Level6, {
+		{12*8, 55*8, 3, 1}, // bottom boor
+		{ 6*8, 25*8, 7, 0}, // top door
+	}},
+	{MAP_LEVEL7, 2, Level7, {{25*8, 25*8, 6, 0}}},
 };
 
 static void splash_screen(void);
@@ -442,12 +498,13 @@ static void level_gamestate(u8 level_idx, u8 door_idx){
 	player.py = (long)level->doors[door_idx].y << 8;
 	
 	while(next_level == 0){
-		px_profile_start();
+		// px_profile_start();
 		read_gamepads();
 		
 		if(JOY_SELECT(pad1.value)){
 			if(JOY_UP  (pad1.press)) next_level = level_idx + 1;
 			if(JOY_DOWN(pad1.press)) next_level = level_idx - 1;
+			if(JOY_BTN_B(pad1.press)) player.vy = -1000;
 		}
 		
 		update_player();
@@ -475,7 +532,7 @@ static void level_gamestate(u8 level_idx, u8 door_idx){
 			}
 		}
 		
-		px_profile_end();
+		// px_profile_end();
 		px_spr_end();
 		px_wait_nmi();
 	}
@@ -502,7 +559,7 @@ static void splash_screen(void){
 			PX.scroll_y = scroll;
 		}
 		
-		px_profile_end();
+		// px_profile_end();
 		px_spr_end();
 		px_wait_nmi();
 	}
@@ -525,12 +582,14 @@ void main(void){
 	// Decompress the tileset into character memory.
 	px_uxrom_select(0);
 	px_lz4_to_vram(CHR_ADDR(0, 0), CHR0);
-	px_lz4_to_vram(CHR_ADDR(1, 0), BOBY);
+	px_lz4_to_vram(CHR_ADDR(1, 0x00), BOBY);
+	px_lz4_to_vram(CHR_ADDR(1, 0x74), BABY);
 	
 	// music_init(&MUSIC);
 	// sound_init(&SOUNDS);
 	// music_play(0);
 	
 	// Jump to the splash screen state.
-	level_gamestate(1, 0);
+	level_gamestate(2, 2);
+	// level_gamestate(1, 0);
 }

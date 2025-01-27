@@ -22,6 +22,7 @@ def attr_byte(i):
 
 #if len(values)%960 == 0:
 	#values += [attr_byte(i) for i in range(size//15)]
+values += [0]*64
 
 format = "{0}B".format(len(values))
 data_u8 = struct.pack(format, *values)
