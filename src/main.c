@@ -315,8 +315,9 @@ static void update_player(){
 	bool walking = false;
 	onFloor = collision_check(player.x,player.y+1);
 	// ACTUAL INPUT
-	if(JOY_LEFT (pad1.value)) { player.px -= 1 << 8; walking = true; player.facingLeft = true; }
-	if(JOY_RIGHT(pad1.value)) { player.px += 1 << 8; walking = true; player.facingLeft = false; }
+	player.vx = 0;
+	if(JOY_LEFT (pad1.value)) { player.vx = -1 << 8; walking = true; player.facingLeft = true; }
+	if(JOY_RIGHT(pad1.value)) { player.vx = +1 << 8; walking = true; player.facingLeft = false; }
 	
 	// We are not on floor
 	if (!onFloor) {
@@ -410,8 +411,8 @@ static void update_player(){
 	}
 
 	// draw the tile hex on the screen for debugging;
-	px_debug_hex_addr = NT_ADDR(0,2,2);
-	px_debug_hex(flip);
+	// px_debug_hex_addr = NT_ADDR(0,2,2);
+	// px_debug_hex(flip);
 }
 
 static void draw_player(void){
@@ -509,46 +510,52 @@ static void LevelWin(void){
 }
 
 typedef void LevelCallback(void);
+
+typedef struct {
+	u16 x, y;
+	enum {DOOR_L, DOOR_R, DOOR_U, DOOR_D} dir;
+	u8 level, door;
+} Door;
+
 typedef struct {
 	const u8* map;
 	u8 rom_bank;
 	LevelCallback* update;
-	struct {
-		u16 x, y;
-		u8 level, door;
-	} doors[4];
+	Door doors[4];
 } LevelDef;
 
 static const LevelDef LEVELS[] = {
 	{}, // Use zero as "no level"
 	{MAP_LEVEL1, 1, Level1, {
-		{192, 208, 2, 0}, // top door
+		{26*8, 25*8, DOOR_R, 2, 0}, // top door
 	}},
 	{MAP_LEVEL2, 1, Level2, {
-		{11*8, 51*8, 1, 0}, // left door
-		{21*8, 25*8, 3, 0}, // top door
-		{22*8, 47*8, 0, 0}, // initial spawn
+		{10*8, 51*8, DOOR_L, 1, 0}, // left door
+		{22*8, 25*8, DOOR_R, 3, 0}, // top door
+		{22*8, 47*8, 0, 0, 0}, // initial spawn
 	}},
 	{MAP_LEVEL3, 1, Level3, {
-		{ 3*16, 18*16, 2, 1}, // left door
-		{11*16, 13*16, 6, 0}, // right door
-		{ 8*16, 27*16, 4, 0}, // bottom door
+		{ 5*8, 35*8, DOOR_L, 2, 1}, // left door
+		{26*8, 25*8, DOOR_R, 6, 0}, // right door
+		{16*8, 55*8, DOOR_D, 4, 0}, // bottom door
 	}},
 	{MAP_LEVEL4, 1, Level4, {
-		{ 8*16, 12*16, 3, 2}, // top door
-		{13*16, 18*16, 5, 0}, // right door
+		{16*8, 22*8, DOOR_U, 3, 2}, // top door
+		{26*8, 35*8, DOOR_R, 5, 0}, // right door
 	}},
-	{MAP_LEVEL5, 2, Level5, {{7*16, 13*16, 4, 1}}},
+	{MAP_LEVEL5, 2, Level5, {
+		{12*8, 25*8, DOOR_L, 4, 1},
+	}},
 	{MAP_LEVEL6, 2, Level6, {
-		{12*8, 55*8, 3, 1}, // bottom boor
-		{ 6*8, 25*8, 7, 0}, // top door
+		{12*8, 55*8, DOOR_L, 3, 1}, // bottom boor
+		{ 6*8, 25*8, DOOR_L, 7, 0}, // top door
 	}},
 	{MAP_LEVEL7, 2, Level7, {
-		{25*8, 25*8, 6, 0}, // right door
-		{ 7*8, 25*8, 8, 0}, // left door
+		{25*8, 25*8, DOOR_R, 6, 0}, // right door
+		{ 6*8, 25*8, DOOR_L, 8, 0}, // left door
 	}},
 	{MAP_WIN, 2, LevelWin, {
-		{27*8, 49*8, 0, 0}
+		{27*8, 49*8, 0, 0, 0}
 	}},
 };
 
@@ -559,6 +566,19 @@ static void set_scroll(int y){
 	if(scroll < 0) scroll = 0;
 	if(scroll > 240) scroll = 240;
 	PX.scroll_y = scroll;
+}
+
+static bool check_door(Door* door){
+	if(abs(player.x - door->x) < 8 && abs(player.y - door->y) < 8){
+		switch(door->dir){
+			case DOOR_L: return player.vx < 0;
+			case DOOR_R: return player.vx > 0;
+			case DOOR_U: return player.vy < 0;
+			case DOOR_D: return player.vy > 0;
+		}
+	}
+	
+	return false;
 }
 
 static void level_gamestate(u8 level_idx, u8 door_idx){
@@ -583,7 +603,7 @@ static void level_gamestate(u8 level_idx, u8 door_idx){
 	
 	set_scroll(level->doors[door_idx].y);
 	px_spr_clear();
-	fade_from_black(PALETTE, 4);
+	fade_from_black(PALETTE, 2);
 	
 	memset(&player, 0, sizeof(player));
 	player.px = (long)level->doors[door_idx].x << 8;
@@ -606,17 +626,15 @@ static void level_gamestate(u8 level_idx, u8 door_idx){
 		draw_player();
 		
 		for(idx = 0; idx < 4; idx++){
-			int x = level->doors[idx].x, y = level->doors[idx].y;
-			if(level->doors[idx].level == 0) break;
+			Door* door = level->doors + idx;
+			if(door->level == 0) break;
 			
 			// TODO door placeholder
-			meta_spr2(x, y, false, _BOBY_META);
+			meta_spr2(door->x, door->y, false, _BOBY_META);
 			
-			if(JOY_UP(pad1.press) && !JOY_SELECT(pad1.value)){
-				if(abs(player.x - x) < 8 && abs(player.y - y) < 16){
-					next_level = level->doors[idx].level;
-					next_door = level->doors[idx].door;
-				}
+			if(check_door(door)){
+				next_level = door->level;
+				next_door = door->door;
 			}
 		}
 		
@@ -625,7 +643,7 @@ static void level_gamestate(u8 level_idx, u8 door_idx){
 		px_wait_nmi();
 	}
 	
-	fade_to_black(PALETTE, 4);
+	fade_to_black(PALETTE, 2);
 	
 	level_idx = next_level;
 	door_idx = next_door;
@@ -679,7 +697,7 @@ void main(void){
 	px_lz4_to_vram(CHR_ADDR(1, 0x74), BABY);
 	
 	music_init(&MUSIC);
-	// sound_init(&SOUNDS);
+	sound_init(&SOUNDS);
 	music_play(0);
 	
 	// Jump to the splash screen state.
