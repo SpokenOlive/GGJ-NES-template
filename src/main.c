@@ -663,6 +663,6 @@ void main(void){
 	// music_play(0);
 	
 	// Jump to the splash screen state.
-	// level_gamestate(2, 2);
-	level_gamestate(4, 0);
+	level_gamestate(2, 2);
+	// level_gamestate(4, 0);
 }
