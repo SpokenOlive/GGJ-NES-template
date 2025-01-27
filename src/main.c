@@ -246,6 +246,7 @@ static const u8* BABY_BUBBLE[] = {
 	_BABY_META + 4*17,
 	_BABY_META + 5*17,
 	_BABY_META + 6*17,
+	_BABY_META + 5*17,
 };
 static const u8 BABY_BUBBLE_LEN = sizeof(BABY_BUBBLE)/sizeof(*BABY_BUBBLE);
 
@@ -442,15 +443,20 @@ static void Level1(void){
 			canJump = true;
 		}
 	}
+	
+	meta_spr2( 9*8, 52*8 - 1, true, BABY_HEART[((px_ticks +  0)/8) % BABY_HEART_LEN]);
 }
 
 static void Level2(void){
+	meta_spr2(13*8, 24*8 - 1, false, BABY_HEART[((px_ticks +  0)/8) % BABY_HEART_LEN]);
 }
 
 static void Level3(void){
+	meta_spr2(23*8, 52*8 - 1, false, BABY_HEART[((px_ticks +  0)/8) % BABY_HEART_LEN]);
 }
 
 static void Level4(void){
+	meta_spr2(25*8, 30*8 - 1, false, BABY_HEART[((px_ticks +  0)/8) % BABY_HEART_LEN]);
 }
 
 static void Level5(void){
@@ -460,12 +466,19 @@ static void Level5(void){
 			canSlam = true;
 		}
 	}
+	
+	meta_spr2(20*8, 58*8 - 1, false, BABY_HEART[((px_ticks +  0)/8) % BABY_HEART_LEN]);
+	meta_spr2(11*8, 58*8 - 1, true, BABY_HEART[((px_ticks +  0)/8) % BABY_HEART_LEN]);
 }
 
 static void Level6(void){
+	meta_spr2(15*8, 24*8 - 1, true, BABY_HEART[((px_ticks +  0)/8) % BABY_HEART_LEN]);
 }
 
 static void Level7(void){
+	meta_spr2(14*8, 34*8 - 1, false, BABY_HEART[((px_ticks +  0)/8) % BABY_HEART_LEN]);
+	meta_spr2(10*8, 50*8 - 1, true, BABY_HEART[((px_ticks +  0)/8) % BABY_HEART_LEN]);
+	meta_spr2(26*8, 42*8 - 1, false, BABY_HEART[((px_ticks +  0)/8) % BABY_HEART_LEN]);
 }
 
 static void Level8(void){
@@ -475,7 +488,7 @@ static void Level9(void){
 }
 
 static void LevelWin(void){
-	meta_spr2( 50, 399, false, BABY_HEART[((px_ticks +  0)/8) % BABY_HEART_LEN]);
+	meta_spr2( 50, 399, true, BABY_HEART[((px_ticks +  0)/8) % BABY_HEART_LEN]);
 	meta_spr2( 100, 399, false, BABY_HEART[((px_ticks +  8)/8) % BABY_HEART_LEN]);
 	meta_spr2( 170, 399, false, BABY_HEART[((px_ticks +  3)/8) % BABY_HEART_LEN]);
 	
@@ -650,6 +663,6 @@ void main(void){
 	// music_play(0);
 	
 	// Jump to the splash screen state.
-	level_gamestate(2, 2);
-	// level_gamestate(7, 1);
+	// level_gamestate(2, 2);
+	level_gamestate(1, 0);
 }
