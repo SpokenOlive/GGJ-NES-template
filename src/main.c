@@ -105,6 +105,13 @@ static const u8 _BOBY_META[] = {
 
 static const u8* BOBY_IDLE[] = {
 	_BOBY_META +  (  0/16)*17,
+	_BOBY_META +  (  0/16)*17,
+	_BOBY_META +  (  0/16)*17,
+	_BOBY_META +  (  0/16)*17,
+	_BOBY_META +  (  0/16)*17,
+	_BOBY_META +  (  0/16)*17,
+	_BOBY_META +  (  0/16)*17,
+	_BOBY_META +  (  0/16)*17,
 	_BOBY_META +  ( 16/16)*17,
 	_BOBY_META +  ( 32/16)*17,
 	_BOBY_META +  (  0/16)*17,
