@@ -100,10 +100,10 @@ $(ROM): ld65.cfg $(OBJS) $(PX_LIB)
 src/data.o: $(CHR:.png=.lz4) $(MAPS)
 
 tiles: chr/0.chr
-	tools/chr2png "1D 00 10 20" chr/0.chr chr/0-pal0.png
-	tools/chr2png "1D 06 16 26" chr/0.chr chr/0-pal1.png
-	tools/chr2png "1D 09 19 29" chr/0.chr chr/0-pal2.png
-	tools/chr2png "1D 01 11 21" chr/0.chr chr/0-pal3.png
+	tools/chr2png "2B 3B 1C 0C" chr/0.chr chr/0-pal0.png
+	tools/chr2png "2B 3B 1C 0C" chr/0.chr chr/0-pal1.png
+	tools/chr2png "2B 3B 1C 0C" chr/0.chr chr/0-pal2.png
+	tools/chr2png "2B 3B 1C 0C" chr/0.chr chr/0-pal3.png
 
 audio/sounds.s: audio/sounds.nsf
 	tools/nsf2data5 $< -ca65 -ntsc
