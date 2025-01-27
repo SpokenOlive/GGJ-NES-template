@@ -678,9 +678,9 @@ void main(void){
 	px_lz4_to_vram(CHR_ADDR(1, 0x00), BOBY);
 	px_lz4_to_vram(CHR_ADDR(1, 0x74), BABY);
 	
-	// music_init(&MUSIC);
+	music_init(&MUSIC);
 	// sound_init(&SOUNDS);
-	// music_play(0);
+	music_play(0);
 	
 	// Jump to the splash screen state.
 	level_gamestate(2, 2);
