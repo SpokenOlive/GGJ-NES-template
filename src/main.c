@@ -412,15 +412,29 @@ typedef struct {
 
 static const LevelDef LEVELS[] = {
 	{}, // Use zero as "no level"
-	{MAP_LEVEL1, 1, Level1, {{192, 208, 2, 0}}},
-	{MAP_LEVEL2, 1, Level2, {{11*8, 51*8, 1, 0}, {21*8, 25*8, 3, 0}, {22*8, 47*8, 0, 0}}},
-	{MAP_LEVEL3, 1, Level3, {{5*8, 35*8, 2, 1}, {15*8, 54*8, 4, 0}}},
-	{MAP_LEVEL4, 1, Level4, {{15*8, 22*8, 3, 1}, {25*8, 35*8, 5, 0}}},
-	{MAP_LEVEL5, 2, Level5, {{48, 464, 4, 1}, {220, 464, 6, 0}}},
-	{MAP_LEVEL6, 2, Level6, {{48, 464, 5, 1}, {220, 464, 7, 0}}},
-	{MAP_LEVEL7, 2, Level7, {{48, 464, 6, 1}, {220, 464, 8, 0}}},
-	{MAP_LEVEL8, 2, Level8, {{48, 464, 7, 1}, {220, 464, 9, 0}}},
-	{MAP_LEVEL9, 2, Level9, {{48, 464, 8, 1}, {220, 464, 1, 0}}},
+	{MAP_LEVEL1, 1, Level1, {
+		{192, 208, 2, 0}, // top door
+	}},
+	{MAP_LEVEL2, 1, Level2, {
+		{11*8, 51*8, 1, 0}, // left door
+		{21*8, 25*8, 3, 0}, // top door
+		{22*8, 47*8, 0, 0}, // initial spawn
+	}},
+	{MAP_LEVEL3, 1, Level3, {
+		{ 4*16, 18*16, 2, 1}, // left door
+		{11*16, 13*16, 6, 0}, // right door
+		{ 8*16, 27*16, 4, 0}, // bottom door
+	}},
+	{MAP_LEVEL4, 1, Level4, {
+		{ 8*16, 13*16, 3, 2}, // top door
+		{12*16, 16*16, 5, 0}, // right door
+	}},
+	{MAP_LEVEL5, 2, Level5, {{7*16, 13*16, 4, 1}}},
+	{MAP_LEVEL6, 2, Level6, {
+		{12*8, 55*8, 3, 1}, // bottom boor
+		{ 6*8, 25*8, 7, 0}, // top door
+	}},
+	{MAP_LEVEL7, 2, Level7, {{25*8, 25*8, 6, 0}}},
 };
 
 static void splash_screen(void);
@@ -544,6 +558,5 @@ void main(void){
 	// music_play(0);
 	
 	// Jump to the splash screen state.
-	// level_gamestate(2, 2);
-	level_gamestate(4, 0);
+	level_gamestate(2, 2);
 }
