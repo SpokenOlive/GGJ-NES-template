@@ -410,6 +410,12 @@ static void Level4(void){
 }
 
 static void Level5(void){
+	if(!canSlam){
+		meta_spr2(16*8, 57*8, false, (px_ticks & 4) ? POWERUP0 : POWERUP1);
+		if(abs(player.x - 15*8) < 8 && abs(player.y - 55*8) < 8){
+			canSlam = true;
+		}
+	}
 }
 
 static void Level6(void){
