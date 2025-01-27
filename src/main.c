@@ -105,11 +105,11 @@ static const u8 _BOBY_META[] = {
 
 static const u8* BOBY_IDLE[] = {
 	_BOBY_META +  (  0/16)*17,
-	_BOBY_META +  (  1/16)*17,
-	_BOBY_META +  (  2/16)*17,
+	_BOBY_META +  ( 16/16)*17,
+	_BOBY_META +  ( 32/16)*17,
 	_BOBY_META +  (  0/16)*17,
-	_BOBY_META +  (  1/16)*17,
-	_BOBY_META +  (  2/16)*17,
+	_BOBY_META +  ( 16/16)*17,
+	_BOBY_META +  ( 32/16)*17,
 };
 static const u8 BOBY_IDLE_LEN = sizeof(BOBY_IDLE)/sizeof(*BOBY_IDLE);
 
@@ -124,18 +124,18 @@ static const u8* BOBY_RUN[] = {
 static const u8 BOBY_RUN_LEN = sizeof(BOBY_RUN)/sizeof(*BOBY_RUN);
 
 static const u8* BOBY_JUMP[] = {
-	//_BOBY_META + (  0/16)*17,
-	//_BOBY_META + (128/16)*17,
-	//_BOBY_META + (144/16)*17,
+	_BOBY_META + (  0/16)*17,
+	_BOBY_META + (128/16)*17,
+	_BOBY_META + (144/16)*17,
 	_BOBY_META + (160/16)*17,
 	_BOBY_META + (176/16)*17,
-	// _BOBY_META + (192/16)*17,
-	// _BOBY_META + (208/16)*17,
-	// _BOBY_META + (224/16)*17,
-	// _BOBY_META + (240/16)*17,
-	// _BOBY_META + (256/16)*17,
-	// _BOBY_META + (272/16)*17,
-	// _BOBY_META + (128/16)*17,
+	_BOBY_META + (192/16)*17,
+	_BOBY_META + (208/16)*17,
+	_BOBY_META + (224/16)*17,
+	_BOBY_META + (240/16)*17,
+	_BOBY_META + (256/16)*17,
+	_BOBY_META + (272/16)*17,
+	_BOBY_META + (128/16)*17,
 };
 static const u8 BOBY_JUMP_LEN = sizeof(BOBY_JUMP)/sizeof(*BOBY_JUMP);
 
@@ -253,6 +253,7 @@ typedef enum {
 bool canJump = false;
 bool canSlam = false;
 
+u8 animCounter;
 bool onFloor = false;
 JumpState jumpState;
 int peakYPos = 0;
@@ -265,34 +266,6 @@ static void update_player(){
 	// ACTUAL INPUT
 	if(JOY_LEFT (pad1.value)) { player.px -= 1 << 8; walking = true; player.facingLeft = true; }
 	if(JOY_RIGHT(pad1.value)) { player.px += 1 << 8; walking = true; player.facingLeft = false; }
-	
-	if (onFloor) {
-		if (walking) {
-			meta_spr2(player.x, player.y, player.facingLeft, BOBY_RUN[(px_ticks/4) % BOBY_RUN_LEN]);
-		}
-		else {
-			meta_spr2(player.x, player.y, player.facingLeft, BOBY_IDLE[(px_ticks/4) % BOBY_IDLE_LEN]);
-		}
-	}
-	else {
-		if (jumpState == JUMP_BOUNCE) {
-			meta_spr2(player.x, player.y, player.facingLeft, BOBY_DIVE[(px_ticks/4) % BOBY_DIVE_LEN]);
-		}
-		else if (jumpState == JUMP_BOUNCED) {
-			meta_spr2(player.x, player.y, player.facingLeft, BOBY_JUMP[(px_ticks/4) % BOBY_JUMP_LEN]);
-		}
-		else {
-			if (player.vy < -100) {
-				meta_spr2(player.x, player.y, player.facingLeft, BOBY_JUMP[(px_ticks/4) % BOBY_JUMP_LEN]);
-			}
-			else if (player.vy > 100) {
-				meta_spr2(player.x, player.y, player.facingLeft, BOBY_FALL[(px_ticks/4) % BOBY_FALL_LEN]);
-			}
-			else {
-				meta_spr2(player.x, player.y, player.facingLeft, BOBY_HANG[(px_ticks/4) % BOBY_HANG_LEN]);
-			}
-		}
-	}
 	
 	// We are not on floor
 	if (!onFloor) {
@@ -388,6 +361,40 @@ static void update_player(){
 	// draw the tile hex on the screen for debugging;
 	px_debug_hex_addr = NT_ADDR(0,2,2);
 	px_debug_hex(flip);
+}
+
+static void draw_player(void){
+	// meta_spr2(player.x, player.y, player.facingLeft, BOBY_IDLE[(px_ticks) & 0x3]);
+	// return;
+	
+	if (onFloor) {
+		if (pad1.value & (JOY_LEFT_MASK | JOY_RIGHT_MASK)) {
+			meta_spr2(player.x, player.y, player.facingLeft, BOBY_RUN[animCounter % BOBY_RUN_LEN]);
+		}
+		else {
+			meta_spr2(player.x, player.y, player.facingLeft, BOBY_IDLE[animCounter % BOBY_IDLE_LEN]);
+		}
+		if(px_ticks % 8 == 0) animCounter++;
+	}
+	else {
+		if (jumpState == JUMP_BOUNCE) {
+			meta_spr2(player.x, player.y, player.facingLeft, BOBY_DIVE[(px_ticks/4) % BOBY_DIVE_LEN]);
+		}
+		else if (jumpState == JUMP_BOUNCED) {
+			meta_spr2(player.x, player.y, player.facingLeft, BOBY_JUMP[(px_ticks/4) % BOBY_JUMP_LEN]);
+		}
+		else {
+			if (player.vy < -100) {
+				meta_spr2(player.x, player.y, player.facingLeft, BOBY_JUMP[(px_ticks/4) % BOBY_JUMP_LEN]);
+			}
+			else if (player.vy > 100) {
+				meta_spr2(player.x, player.y, player.facingLeft, BOBY_FALL[(px_ticks/4) % BOBY_FALL_LEN]);
+			}
+			else {
+				meta_spr2(player.x, player.y, player.facingLeft, BOBY_HANG[(px_ticks/4) % BOBY_HANG_LEN]);
+			}
+		}
+	}
 }
 
 static void Level1(void){
@@ -515,6 +522,8 @@ static void level_gamestate(u8 level_idx, u8 door_idx){
 			PX.scroll_y = scroll;
 		}
 		
+		draw_player();
+		
 		for(idx = 0; idx < 4; idx++){
 			int x = level->doors[idx].x, y = level->doors[idx].y;
 			if(level->doors[idx].level == 0) break;
@@ -588,6 +597,6 @@ void main(void){
 	// music_play(0);
 	
 	// Jump to the splash screen state.
-	level_gamestate(2, 2);
-	// level_gamestate(1, 0);
+	// level_gamestate(2, 2);
+	level_gamestate(1, 0);
 }
