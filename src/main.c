@@ -458,12 +458,12 @@ static const LevelDef LEVELS[] = {
 		{22*8, 47*8, 0, 0}, // initial spawn
 	}},
 	{MAP_LEVEL3, 1, Level3, {
-		{ 4*16, 18*16, 2, 1}, // left door
+		{ 3*16, 18*16, 2, 1}, // left door
 		{11*16, 13*16, 6, 0}, // right door
 		{ 8*16, 27*16, 4, 0}, // bottom door
 	}},
 	{MAP_LEVEL4, 1, Level4, {
-		{ 8*16, 13*16, 3, 2}, // top door
+		{ 8*16, 15*16, 3, 2}, // top door
 		{12*16, 16*16, 5, 0}, // right door
 	}},
 	{MAP_LEVEL5, 2, Level5, {{7*16, 13*16, 4, 1}}},
