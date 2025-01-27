@@ -1,4 +1,4 @@
-PROJECT_NAME = GGJ2X
+PROJECT_NAME = BOBA_BUDDIES
 ROM = $(PROJECT_NAME).nes
 
 CC65_ROOT = $(realpath tools/cc65)

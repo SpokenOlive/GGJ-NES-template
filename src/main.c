@@ -523,8 +523,8 @@ static const LevelDef LEVELS[] = {
 		{ 8*16, 27*16, 4, 0}, // bottom door
 	}},
 	{MAP_LEVEL4, 1, Level4, {
-		{ 8*16, 15*16, 3, 2}, // top door
-		{12*16, 16*16, 5, 0}, // right door
+		{ 8*16, 12*16, 3, 2}, // top door
+		{13*16, 18*16, 5, 0}, // right door
 	}},
 	{MAP_LEVEL5, 2, Level5, {{7*16, 13*16, 4, 1}}},
 	{MAP_LEVEL6, 2, Level6, {
@@ -663,6 +663,6 @@ void main(void){
 	// music_play(0);
 	
 	// Jump to the splash screen state.
-	level_gamestate(2, 2);
-	// level_gamestate(1, 0);
+	// level_gamestate(2, 2);
+	level_gamestate(4, 0);
 }
