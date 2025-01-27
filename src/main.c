@@ -4,14 +4,18 @@
 #include "pixler.h"
 #include "common.h"
 
-#define BG_COLOR 0x37
+
+// #define BG_COLOR 0x24
+#define BG_COLOR 0x2B
 static const u8 PALETTE[] = {
-	BG_COLOR, 0x26, 0x15, 0x04,
+	BG_COLOR, 0x3B, 0x1C, 0x0C,
+	// BG_COLOR, 0x2B, 0x14, 0x04,
 	BG_COLOR, 0x06, 0x16, 0x26,
 	BG_COLOR, 0x09, 0x19, 0x29,
 	BG_COLOR, 0x01, 0x11, 0x21,
 	
-	BG_COLOR, 0x26, 0x15, 0x04,
+	BG_COLOR, 0x3B, 0x1C, 0x0C,
+	// BG_COLOR, 0x33, 0x14, 0x04,
 	BG_COLOR, 0x06, 0x16, 0x26,
 	BG_COLOR, 0x09, 0x19, 0x29,
 	BG_COLOR, 0x01, 0x11, 0x21,
@@ -65,7 +69,6 @@ void meta_spr2(u8 x, s16 y, bool flipx, const u8* data);
 	-8,  -8, 0x3A + (2*_idx_), 0, \
 	 0,  -8, 0x3B + (2*_idx_), 0, \
 	 128, \
-	
 
 static const u8 _BOBY_META[] = {
 	BOBY_META_N(0x00)
@@ -184,6 +187,13 @@ static const u8* BOBY_DIVE[] = { // 34 - 37
 	_BOBY_META + (352/16)*17,
 };
 static const u8 BOBY_DIVE_LEN = sizeof(BOBY_DIVE)/sizeof(*BOBY_DIVE);
+
+#define BABY_META_N(_idx_) \
+	-8, -16, 0x00 + (2*_idx_), 0, \
+	 0, -16, 0x01 + (2*_idx_), 0, \
+	-8,  -8, 0x3A + (2*_idx_), 0, \
+	 0,  -8, 0x3B + (2*_idx_), 0, \
+	 128, \
 
 typedef struct {
 	long px, py;
@@ -403,9 +413,9 @@ typedef struct {
 static const LevelDef LEVELS[] = {
 	{}, // Use zero as "no level"
 	{MAP_LEVEL1, 1, Level1, {{192, 208, 2, 0}}},
-	{MAP_LEVEL2, 1, Level2, {{48, 464, 1, 1}, {220, 464, 3, 0}}},
-	{MAP_LEVEL3, 1, Level3, {{48, 464, 2, 1}, {220, 464, 4, 0}}},
-	{MAP_LEVEL4, 1, Level4, {{48, 464, 3, 1}, {220, 464, 5, 0}}},
+	{MAP_LEVEL2, 1, Level2, {{11*8, 51*8, 1, 0}, {21*8, 25*8, 3, 0}, {22*8, 47*8, 0, 0}}},
+	{MAP_LEVEL3, 1, Level3, {{5*8, 35*8, 2, 1}, {15*8, 54*8, 4, 0}}},
+	{MAP_LEVEL4, 1, Level4, {{15*8, 22*8, 3, 1}, {25*8, 35*8, 5, 0}}},
 	{MAP_LEVEL5, 2, Level5, {{48, 464, 4, 1}, {220, 464, 6, 0}}},
 	{MAP_LEVEL6, 2, Level6, {{48, 464, 5, 1}, {220, 464, 7, 0}}},
 	{MAP_LEVEL7, 2, Level7, {{48, 464, 6, 1}, {220, 464, 8, 0}}},
@@ -442,12 +452,13 @@ static void level_gamestate(u8 level_idx, u8 door_idx){
 	player.py = (long)level->doors[door_idx].y << 8;
 	
 	while(next_level == 0){
-		px_profile_start();
+		// px_profile_start();
 		read_gamepads();
 		
 		if(JOY_SELECT(pad1.value)){
 			if(JOY_UP  (pad1.press)) next_level = level_idx + 1;
 			if(JOY_DOWN(pad1.press)) next_level = level_idx - 1;
+			if(JOY_BTN_B(pad1.press)) player.vy = -1000;
 		}
 		
 		update_player();
@@ -475,7 +486,7 @@ static void level_gamestate(u8 level_idx, u8 door_idx){
 			}
 		}
 		
-		px_profile_end();
+		// px_profile_end();
 		px_spr_end();
 		px_wait_nmi();
 	}
@@ -502,7 +513,7 @@ static void splash_screen(void){
 			PX.scroll_y = scroll;
 		}
 		
-		px_profile_end();
+		// px_profile_end();
 		px_spr_end();
 		px_wait_nmi();
 	}
@@ -525,12 +536,14 @@ void main(void){
 	// Decompress the tileset into character memory.
 	px_uxrom_select(0);
 	px_lz4_to_vram(CHR_ADDR(0, 0), CHR0);
-	px_lz4_to_vram(CHR_ADDR(1, 0), BOBY);
+	px_lz4_to_vram(CHR_ADDR(1, 0x00), BOBY);
+	px_lz4_to_vram(CHR_ADDR(1, 0x74), BABY);
 	
 	// music_init(&MUSIC);
 	// sound_init(&SOUNDS);
 	// music_play(0);
 	
 	// Jump to the splash screen state.
-	level_gamestate(1, 0);
+	// level_gamestate(2, 2);
+	level_gamestate(4, 0);
 }
