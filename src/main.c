@@ -60,6 +60,18 @@ void fade_from_black(const u8* palette, u8 delay){
 	darken(palette, 0);
 }
 
+void fade_to_black(const u8* palette, u8 delay){
+	darken(palette, 0);
+	px_wait_frames(delay);
+	darken(palette, 1);
+	px_wait_frames(delay);
+	darken(palette, 2);
+	px_wait_frames(delay);
+	darken(palette, 3);
+	px_wait_frames(delay);
+	darken(palette, 4);
+}
+
 void meta_spr(u8 x, u8 y, u8 pal, const u8* data);
 void meta_spr2(u8 x, s16 y, bool flipx, const u8* data);
 
@@ -542,11 +554,18 @@ static const LevelDef LEVELS[] = {
 
 static void splash_screen(void);
 
+static void set_scroll(int y){
+	int scroll = y - 128;
+	if(scroll < 0) scroll = 0;
+	if(scroll > 240) scroll = 240;
+	PX.scroll_y = scroll;
+}
+
 static void level_gamestate(u8 level_idx, u8 door_idx){
 	static const LevelDef* level;
-	int next_level = 0;
-	int next_door = 0;
+	int next_level = 0, next_door = 0;
 	
+	tail_call:
 	level = LEVELS + level_idx;
 	collisionMap = level->map;
 	px_uxrom_select(level->rom_bank);
@@ -562,6 +581,8 @@ static void level_gamestate(u8 level_idx, u8 door_idx){
 		// px_blit(0x040, map + 0x7C0);
 	} px_ppu_sync_enable();
 	
+	set_scroll(level->doors[door_idx].y);
+	px_spr_clear();
 	fade_from_black(PALETTE, 4);
 	
 	memset(&player, 0, sizeof(player));
@@ -581,13 +602,7 @@ static void level_gamestate(u8 level_idx, u8 door_idx){
 		update_player();
 		level->update();
 		
-		{
-			int scroll = player.y - 128;
-			if(scroll < 0) scroll = 0;
-			if(scroll > 240) scroll = 240;
-			PX.scroll_y = scroll;
-		}
-		
+		set_scroll(player.y);
 		draw_player();
 		
 		for(idx = 0; idx < 4; idx++){
@@ -610,7 +625,12 @@ static void level_gamestate(u8 level_idx, u8 door_idx){
 		px_wait_nmi();
 	}
 	
-	level_gamestate(next_level, next_door);
+	fade_to_black(PALETTE, 4);
+	
+	level_idx = next_level;
+	door_idx = next_door;
+	next_level = next_door = 0;
+	goto tail_call;
 }
 
 static void splash_screen(void){
