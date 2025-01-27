@@ -443,6 +443,7 @@ typedef struct {
 
 static const LevelDef LEVELS[] = {
 	{}, // Use zero as "no level"
+<<<<<<< Updated upstream
 	{MAP_LEVEL1, 1, Level1, {
 		{192, 208, 2, 0}, // top door
 	}},
@@ -457,7 +458,7 @@ static const LevelDef LEVELS[] = {
 		{ 8*16, 27*16, 4, 0}, // bottom door
 	}},
 	{MAP_LEVEL4, 1, Level4, {
-		{ 8*16, 13*16, 3, 2}, // top door
+		{ 8*16, 15*16, 3, 2}, // top door
 		{12*16, 16*16, 5, 0}, // right door
 	}},
 	{MAP_LEVEL5, 2, Level5, {{7*16, 13*16, 4, 1}}},
