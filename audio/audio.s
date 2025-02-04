@@ -60,7 +60,7 @@ nmi_callback:
 
 .export _px_nmi_callback = nmi_callback
 
-.segment "PRG0"
+.segment "RODATA"
 
 FT_DPCM_PTR = (FT_DPCM_OFF & $3fff) >> 6
 FT_DPCM_OFF:
