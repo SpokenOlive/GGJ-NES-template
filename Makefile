@@ -111,7 +111,7 @@ audio/sounds.s: audio/sounds.nsf
 audio/%.s: audio/%.txt
 	tools/text2vol5 -ca65 $<
 
-audio/audio.o: $(SONGS:.txt=.s) audio/sounds.s
+audio/audio.o: $(SONGS:.txt=.s)
 
 tools:
 	echo foobar

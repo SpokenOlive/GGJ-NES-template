@@ -396,7 +396,7 @@ static void update_player(){
 			player.vy = JUMPSPEED;
 			jumpState = JUMP_BOUNCED;
 			// if(bounceTimer > 20) bounceTimer -= 20; else bounceTimer = 0;
-			sound_play(SOUND_JUMP);
+			sound_play(SOUND_BOUNCE);
 		}
 		else if (jumpState == JUMP_BOUNCED) {
 			jumpState = JUMP_READY;
@@ -635,6 +635,7 @@ static void level_gamestate(u8 level_idx, u8 door_idx){
 			if(check_door(door)){
 				next_level = door->level;
 				next_door = door->door;
+				sound_play(SOUND_TRANSPORT);
 			}
 		}
 		
